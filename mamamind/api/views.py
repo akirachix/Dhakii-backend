@@ -14,6 +14,7 @@ from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import logout
 
 
 
@@ -99,28 +100,27 @@ class YourProtectedView(APIView):
         # Your view logic here
         return Response({"message": "You have access to this view!"})
 
-from rest_framework_simplejwt.tokens import RefreshToken
 
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        
-        if not email or not password:
-            return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        user = authenticate(email=email, password=password)  # Uses the custom email backend
-        if user:
+
+        # Authenticate user
+        user = authenticate(request, email=email, password=password)
+
+        if user is not None:
+            # Generate tokens
             refresh = RefreshToken.for_user(user)
             return Response({
+                'success': 'Successfully logged in.',
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
             }, status=status.HTTP_200_OK)
-        
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    def get(self, request):
-        return Response({'message': 'Successfully logged In.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': 'Invalid credentials.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 class CreateAdminUser(APIView):
     permission_classes = [AllowAny]
@@ -158,14 +158,17 @@ class UserSearchView(APIView):
 
 
 class LogoutView(APIView):
-    def post(self, request, *args, **kwargs):
-        token = request.headers.get('Authorization').split(' ')[1]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
         try:
-            token_obj = OutstandingToken.objects.get(token=token)
-            BlacklistedToken.objects.create(token=token_obj)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except OutstandingToken.DoesNotExist:
-            return Response({"detail": "Token is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)
+            refresh_token = request.data.get('refresh')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()  # Blacklist the token to prevent reuse
+            return Response({'success': 'Successfully logged out.'}, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 

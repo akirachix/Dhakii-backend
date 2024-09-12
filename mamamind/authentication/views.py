@@ -9,6 +9,7 @@ from users.models import User
 from django.http import JsonResponse, HttpResponseNotAllowed
 from authlib.integrations.django_client import OAuth
 from django.contrib.auth import authenticate
+# from .utils import get_tokens
 
 
 oauth = OAuth()
@@ -23,15 +24,6 @@ oauth.register(
 )
 
 
-
-# Assuming you're using a method to get tokens, replace this placeholder
-def get_tokens(email, password):
-    # Replace this with your actual logic to obtain tokens
-    return {
-        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQxNDM3NTE0LCJpYXQiOjE3MjYwNzc1MTQsImp0aSI6IjJmYjU4NTAwN2JhNjQyMjhiMTc1NTg3ZGJhYzg1Zjg0IiwidXNlcl9pZCI6N30.h91Xrag7O8D4DX1fFFjDW8v4J_TyI0ueGbKw-j_HtRg",
-        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MjA0MTQzNzUxNCwiaWF0IjoxNzI2MDc3NTE0LCJqdGkiOiI0MWRjZGFkYWU1ZjY0ZTA3ODQzM2Q3NmU1Y2I2NDUzYSIsInVzZXJfaWQiOjd9.EqRdtiPrXYQlwfwDTpsYTzeWHS9mJGU_lSv_K3GbE2Y"
-    }
-
 def login(request):
     if request.method == "POST":
         try:
@@ -39,44 +31,56 @@ def login(request):
             email = credentials.get("email")
             password = credentials.get("password")
             
-            # Debugging logs (avoid in production)
-            print(f"Email: {email}")
-            print(f"Password: {password}")
+            # Redirect to OAuth provider for authentication
+            auth_url = "https://localhost:8000/authorize"
+            redirect_uri = request.build_absolute_uri(reverse("callback"))
+            client_id = settings.OAUTH_CLIENT_ID
+            scope = "openid profile email"
+            auth_url_with_params = f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}"
             
-            # Authenticate the user (replace this with your actual authentication logic)
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                # Obtain tokens (replace with your actual token retrieval logic)
-                tokens = get_tokens(email, password)
-                
-                # Return both success message and tokens
-                return JsonResponse({
-                    "message": "Successfully logged in",
-                    "tokens": tokens
-                }, status=200)
-            else:
-                return JsonResponse({"error": "Invalid credentials"}, status=401)
+            return redirect(auth_url_with_params)
         
         except Exception as e:
             print(f"Error during login: {str(e)}")
             return JsonResponse({"error": f"Login failed: {str(e)}"}, status=401)
     
     elif request.method == "GET":
-        # Render the login page template
-        return render(request, "login/index.html")
+        return render(request, "authentication/index.html")
     
     else:
         return HttpResponseNotAllowed(["POST", "GET"])
 
 
+import requests
 
 def callback(request):
+    code = request.GET.get('code')
+    if not code:
+        return JsonResponse({"error": "Authorization code not found."}, status=400)
+    
     try:
-        token = oauth.auth0.authorize_access_token(request)
-        request.session["user"] = token
-        return redirect(request.build_absolute_uri(reverse("index")))
+        # Exchange the authorization code for tokens
+        token_url = "https://localhost:8000/token"
+        response = requests.post(token_url, data={
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': request.build_absolute_uri(reverse("callback")),
+            'client_id': settings.OAUTH_CLIENT_ID,
+            'client_secret': settings.OAUTH_CLIENT_SECRET
+        })
+        
+        tokens = response.json()
+        
+        if response.status_code == 200:
+            # Successfully received tokens
+            return JsonResponse({"message": "Successfully authenticated", "tokens": tokens}, status=200)
+        else:
+            return JsonResponse({"error": "Failed to authenticate"}, status=response.status_code)
+    
     except Exception as e:
-        return HttpResponse(f"Error during authentication: {str(e)}")
+        print(f"Error during callback: {str(e)}")
+        return JsonResponse({"error": f"Callback failed: {str(e)}"}, status=500)
+
 
 
 
@@ -107,7 +111,7 @@ def index(request):
         return HttpResponse("user does not exist")
     return render(
         request,
-        "login/index.html",
+        "authentication/index.html",
         context={
             "session": user,
             "pretty": json.dumps(request.session.get("user"), indent=4),

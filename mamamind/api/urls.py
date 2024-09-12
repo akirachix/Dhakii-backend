@@ -20,7 +20,7 @@ urlpatterns = [
     path('users/login/', LoginView.as_view(), name='login'),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path('users/logout/', LogoutView.as_view(), name='logout'),
     path('users/roles/', UserRoleListCreateView.as_view(), name='user_roles'),
     path('users/profile/', UserProfileView.as_view(), name='user_profile'),
     
