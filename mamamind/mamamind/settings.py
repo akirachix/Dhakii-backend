@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 load_dotenv()
-import logging.config
 from datetime import timedelta
 
 
