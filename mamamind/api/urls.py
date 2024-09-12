@@ -1,4 +1,12 @@
 from django.urls import path
+from .views import (
+    questions, 
+    ScreeningTestScoreListView, 
+    ScreeningTestScoreDetailView, 
+    AnswerListCreateView, 
+    AnswerDetailView
+)
+
 from .views import UserListView, UserDetailView
 from . import views
 from .views import UserSearchView
@@ -9,10 +17,15 @@ from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
 
-
-
-
 urlpatterns = [
+    path('questions/', questions, name='questions'), 
+    path('questions/<int:question_id>/', questions, name='question_detail'),
+    path('screeningtestscore/', ScreeningTestScoreListView.as_view(), name='screeningtestscore'),
+    path('screeningtestscore/<int:pk>/', ScreeningTestScoreDetailView.as_view(), name='screeningtestscore_detail'),
+    path('screeningtestscore/date/<int:year>/<int:month>/<int:day>/', ScreeningTestScoreListView.as_view(), name='screeningtestscore_date'),
+    path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
+    path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
+
     path('users/', UserListView.as_view(), name='user_view'),  # For POST and GET (authenticated user)
     path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  # For GET, PATCH (user by ID)
     path('generate_token/', views.generate_token, name='generate_token'),
@@ -23,9 +36,5 @@ urlpatterns = [
     path('users/logout/', LogoutView.as_view(), name='logout'),
     path('users/roles/', UserRoleListCreateView.as_view(), name='user_roles'),
     path('users/profile/', UserProfileView.as_view(), name='user_profile'),
-    
-
-
-
-
 ]
+

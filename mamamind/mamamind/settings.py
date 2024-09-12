@@ -48,12 +48,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'import_export',
     'api',
+    'questions',
+    'rest_framework',
+    'screeningtestscore',
+    'answers',
     'authentication',
     'users',
-    'rest_framework',
     'rest_framework_simplejwt',
-
 ]
 
 MIDDLEWARE = [
@@ -97,9 +100,9 @@ WSGI_APPLICATION = 'mamamind.wsgi.application'
 
 import os
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "mydatabase",
+   'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
     }
 }
 
@@ -149,6 +152,22 @@ ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
 
+<<<<<<< HEAD
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        # Add other renderers if needed
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        # Add other parsers if needed
+    ),
+
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}
+
 
 AUTH0_CLIENT_ID = os.getenv('AUTH0_CLIENT_ID')
 AUTH0_CLIENT_SECRET = os.getenv('AUTH0_CLIENT_SECRET')
@@ -158,11 +177,7 @@ AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN')
 REDIRECT_URI = 'http://localhost:8000/auth/callback/'
 REDIRECT_URI = 'http://localhost:8000/auth/'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-}
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=365*10),  # Set a long expiration time
