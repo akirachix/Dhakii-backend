@@ -1,0 +1,23 @@
+from rest_framework import serializers
+from questions.models import EPDSQuestion
+from answers.models import Answer
+from screeningtestscore.models import ScreeningTestScore
+
+class EPDSQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EPDSQuestion
+        fields = '__all__'
+
+class AnswerSerializer(serializers.ModelSerializer):
+    question = EPDSQuestionSerializer()  # Nested serializer
+
+    class Meta:
+        model = Answer
+        fields = ['id', 'question', 'test', 'score']
+
+class ScreeningTestScoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ScreeningTestScore
+        fields = '__all__'
+
+
