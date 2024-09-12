@@ -1,12 +1,6 @@
 from django.urls import path
-from .views import (
-    questions, 
-    ScreeningTestScoreListView, 
-    ScreeningTestScoreDetailView, 
-    AnswerListCreateView, 
-    AnswerDetailView
-)
-
+from .views import HospitalDetailView,HospitalListView,ChpDetailView,CHPListView,InviteCHPTestView
+from .views import questions, ScreeningTestScoreListView, ScreeningTestScoreDetailView, AnswerListCreateView, AnswerDetailView
 from .views import UserListView, UserDetailView
 from . import views
 from .views import UserSearchView
@@ -25,7 +19,6 @@ urlpatterns = [
     path('screeningtestscore/date/<int:year>/<int:month>/<int:day>/', ScreeningTestScoreListView.as_view(), name='screeningtestscore_date'),
     path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
     path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
-
     path('users/', UserListView.as_view(), name='user_view'),  # For POST and GET (authenticated user)
     path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  # For GET, PATCH (user by ID)
     path('generate_token/', views.generate_token, name='generate_token'),
@@ -36,5 +29,11 @@ urlpatterns = [
     path('users/logout/', LogoutView.as_view(), name='logout'),
     path('users/roles/', UserRoleListCreateView.as_view(), name='user_roles'),
     path('users/profile/', UserProfileView.as_view(), name='user_profile'),
+    path('hospitals/', HospitalListView.as_view(), name='hospital_list_view'),
+    path('hospitals/<int:id>/', HospitalDetailView.as_view(), name='hospital_detail_view'),
+    path('chps/', CHPListView.as_view(), name='chp_list_view'),
+    path('chps/<int:id>/', ChpDetailView.as_view(), name='chp_detail_view'),
+    path('api/invite_chp_test/', InviteCHPTestView.as_view(), name='invite_chp_test'),
+
 ]
 
