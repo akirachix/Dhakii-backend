@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from hospital.models import Hospital
+from django.conf import settings
+
 
 
 class Nurse(models.Model):
@@ -21,7 +23,7 @@ class Nurse(models.Model):
         ('Female', 'Female'),
     ]
     nurse_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
     tel_no = models.CharField(max_length=15)
