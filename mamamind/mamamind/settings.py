@@ -46,8 +46,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',
-    'questions',
+    'mother',
     'rest_framework',
+    'next_of_kin',
+    'django_filters',
+    'questions',
     'screeningtestscore',
     'answers',
     'authentication',
@@ -56,6 +59,13 @@ INSTALLED_APPS = [
     'community_health_promoter',
 
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # other authentication classes
+    ),
+}
 
 
 MIDDLEWARE = [
