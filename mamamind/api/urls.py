@@ -12,8 +12,17 @@ from .views import LogoutView
 from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
+from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
 
 urlpatterns = [
+    path('nurses/', NurseListView.as_view(), name='nurse_list_view'),
+    path('nurses/search/', NurseListView.as_view(), name='nurse_search'),
+    path('nurses/<int:pk>/', NurseDetailView.as_view(), name='nurse_detail'),
+
+    path('nurse_admins/', NurseAdminListView.as_view(), name='nurse_admin_list_view'),
+    path('nurse_admins/search/', NurseAdminListView.as_view(), name='nurse_admin_search'),
+    path('nurse_admins/<int:pk>/', NurseAdminDetailView.as_view(), name='nurse_admin_detail'),
+
     path('questions/', questions, name='questions'), 
     path('questions/<int:question_id>/', questions, name='question_detail'),
     path('screeningtestscore/', ScreeningTestScoreListView.as_view(), name='screeningtestscore'),
@@ -44,4 +53,5 @@ urlpatterns = [
     path('nextofkins/search/', NextOfKinListView.as_view(), name='nextofkin-search'),
 
 ]
+
 

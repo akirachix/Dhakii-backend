@@ -55,9 +55,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.username
     
     
-# class Meta:
-#     permissions= [
-#         ("permission_name"," Add User")
-#     ]
-
-

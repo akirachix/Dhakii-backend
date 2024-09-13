@@ -7,9 +7,8 @@ from urllib.parse import quote_plus, urlencode
 from django.http import HttpResponse
 from users.models import User
 from django.http import JsonResponse, HttpResponseNotAllowed
-from authlib.integrations.django_client import OAuth
 from django.contrib.auth import authenticate
-# from .utils import get_tokens
+
 
 
 oauth = OAuth()

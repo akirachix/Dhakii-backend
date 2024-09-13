@@ -1,39 +1,30 @@
-
-
-
-from rest_framework.views import APIView
-from django.contrib.auth import logout
-from rest_framework import status
+from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.tokens import OutstandingToken, BlacklistedToken
+from rest_framework import status
+from rest_framework.views import APIView
+from nurse.models import Nurse
+from nurse_admin.models import NurseAdmin
+from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer
+import logging
+from django.contrib.auth import logout
+from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from mother.models import Mother
 from next_of_kin.models import NextOfKin
-from .serializers import MotherSerializer, MinimalMotherSerializer
-from .serializers import NextOfKinSerializer,MinimalNextOfKinSerializer
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 from hospital.models import Hospital
 from community_health_promoter.models import CHP
 from django.core.mail import send_mail
-from .serializers import CHPSerializer
-from .serializers import HospitalSerializer
 from .utilis import send_invitation_email
 from django.contrib.auth.models import User
 from questions.models import EPDSQuestion
-from .serializers import EPDSQuestionSerializer
 import pandas as pd
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from screeningtestscore.models import ScreeningTestScore
-from .serializers import ScreeningTestScoreSerializer
 from django.utils.dateparse import parse_date
 from answers.models import Answer
-from .serializers import AnswerSerializer, EPDSQuestionSerializer
 import logging
 from users.models import User
 from .serializers import UserSerializer
@@ -41,11 +32,45 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
-from .serializers import UserSerializer
 
+class NurseListView(APIView):
+    """API View for getting a list of nurses"""
+    def get(self, request):
+        nurses = self.get_queryset()
+        serializer = NurseSerializer(nurses, many=True)
+        return Response(serializer.data) 
 
+    """You can get a nurse by filtering their sub_location"""
+    def get_queryset(self):
+        queryset = Nurse.objects.all()
+        sub_location = self.request.query_params.get('sub_location',None)
+        if sub_location:
+            queryset= queryset.filter(sub_location=sub_location)
+        return queryset
+    
+    def post(self, request):
+        """This is for adding a nurse to the list of nurses"""
+        my_user= Nurse.objects.get_or_create(user_id=request.user_id)[0]
+        serializer = NurseSerializer(data=request.data, instance=my_user)
+        if serializer.is_valid():
+           serializer.save()
+           return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+           return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+        
+class NurseDetailView(APIView):
+    """This APIView is to show the detailed information about the nurse"""
+    def get(self, request, pk):
+        """This is for getting a specific nurse by using their unique id"""
+        nurses = Nurse.objects.get(pk=pk)
+        serializer = NurseSerializer(nurses)
+        return Response(serializer.data)
+    
+    def patch(self, request, pk):
+        """This is for updating a specific nurse by using their unique id"""
+        nurse = Nurse.objects.get(pk=pk)
+        serializer = NurseSerializer(nurse, data=request.data, partial=True)
 
 class MotherListView(APIView):
     """API View for getting a list of mothers"""
@@ -225,7 +250,58 @@ class ChpDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+#nurse admin
 
+logger = logging.getLogger(__name__)
+
+class NurseAdminListView(APIView):
+    """
+    View to list all nurse admins or retrieve by ID, or search nurse admins by name.
+    """
+    def get(self, request):
+        nurse_admins = self.get_queryset()
+        serializer = NurseAdminSerializer(nurse_admins, many=True)
+        return Response(serializer.data) 
+
+    def get_queryset(self):
+        queryset = NurseAdmin.objects.all()
+        location = self.request.query_params.get('location',None)
+        if location:
+            queryset= queryset.filter(location=location)
+        return queryset
+    
+
+    def post(self, request):
+        """This is for adding a nurse admin to the list of nurses"""
+        serializer = NurseAdminSerializer(data=request.data)
+        if serializer.is_valid():
+           serializer.save()
+           return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    
+
+class NurseAdminDetailView(APIView):
+    """
+    View to update a specific nurse admin by ID.
+    """
+    def put(self, request, pk):
+        logger.info(f"NurseAdminDetailView PUT request for nurse admin ID: {pk}")
+        try:
+            nurse_admin = NurseAdmin.objects.get(pk=pk)
+        except NurseAdmin.DoesNotExist:
+            logger.error(f"Nurse admin with ID {pk} not found for update")
+            return Response({"error": "Nurse admin not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = NurseAdminSerializer(nurse_admin, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"Nurse admin with ID {pk} updated successfully")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            logger.error(f"Failed to update nurse admin with ID {pk}: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class InviteCHPTestView(APIView):
@@ -253,9 +329,6 @@ class InviteCHPTestView(APIView):
             "message": "Invitation sent successfully.",
             "CHP_details": serializer.data
         }, status=status.HTTP_200_OK)
-
-
-
 
 
 @csrf_exempt
@@ -592,3 +665,4 @@ class UserProfileView(APIView):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
         
+
