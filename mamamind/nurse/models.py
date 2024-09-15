@@ -4,7 +4,6 @@ from hospital.models import Hospital
 from django.conf import settings
 
 
-
 class Nurse(models.Model):
     """
     Nurse Model - Stores information about nurses.
@@ -18,9 +17,10 @@ class Nurse(models.Model):
         - sub_location: Location (sub-location) of the nurse.
         - picture: Image field for the nurse's profile picture.
     """
+
     GENDER_CHOICES = [
-        ('Male', 'Male'),
-        ('Female', 'Female'),
+        ("Male", "Male"),
+        ("Female", "Female"),
     ]
     nurse_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -28,10 +28,7 @@ class Nurse(models.Model):
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
     tel_no = models.CharField(max_length=15)
     reg_no = models.CharField(max_length=50)
-    sub_location = models.CharField(max_length=255)   
+    sub_location = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"Nurse {self.user_id.username} ({self.reg_no})"
-
-    
-
+        return f"Nurse {self.user.username} ({self.reg_no})"
