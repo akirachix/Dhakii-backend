@@ -1,9 +1,11 @@
 from django.test import TestCase
 from django.utils import timezone
-from django.contrib.auth import get_user_model  # Import the User model
+from django.contrib.auth import get_user_model
 from community_health_promoter.models import (
     CHP,
-)  # Adjust this import based on your app's structure
+)
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 class CHPModelTest(TestCase):
@@ -36,3 +38,74 @@ class CHPModelTest(TestCase):
         # Test the __str__ method
         expected_str = f"{self.chp.reg_no} - {self.chp.user.username}"  # Use the username from the related user
         self.assertEqual(str(self.chp), expected_str)
+
+    class CHPModelUnhappyPathTest(TestCase):
+        def setUp(self):
+            # Create a valid User instance for testing
+            self.user = get_user_model().objects.create_user(
+                username="chpuser", email="chpuser@example.com", password="password123"
+            )
+
+    def test_missing_required_fields(self):
+        """
+        Test creating a CHP instance with missing required fields should raise an error.
+        """
+        # Test missing 'reg_no' which is required
+        chp = CHP(
+            user=self.user,
+            registered_date=timezone.now().date(),
+            phone_number="1234567890",
+            location="Test Location",
+            sub_location="Test Sub-location",
+            village="Test Village",
+        )
+        with self.assertRaises(ValidationError):
+            chp.full_clean()  # This should raise a ValidationError because 'reg_no' is missing
+
+    def test_exceeding_max_length(self):
+        """
+        Test exceeding max_length of fields should raise a validation error.
+        """
+        chp = CHP(
+            user=self.user,
+            registered_date=timezone.now().date(),
+            reg_no="C" * 256,  # Exceeds the max_length of 255
+            phone_number="1234567890",
+            location="Test Location",
+            sub_location="Test Sub-location",
+            village="Test Village",
+        )
+        with self.assertRaises(ValidationError):
+            chp.full_clean()  # This should raise a ValidationError due to exceeded max_length
+
+    def test_invalid_phone_number_length(self):
+        """
+        Test invalid phone number that doesn't meet the expected length constraint.
+        """
+        chp = CHP(
+            user=self.user,
+            registered_date=timezone.now().date(),
+            reg_no="CHP123",
+            phone_number="123",  # Too short, should be 10 digits
+            location="Test Location",
+            sub_location="Test Sub-location",
+            village="Test Village",
+        )
+        with self.assertRaises(ValidationError):
+            chp.full_clean()  # This should raise a ValidationError due to invalid phone number length
+
+    def test_invalid_user_relationship(self):
+        """
+        Test creating a CHP instance without a valid user should raise an error.
+        """
+        chp = CHP(
+            user=None,  # User is missing
+            registered_date=timezone.now().date(),
+            reg_no="CHP123",
+            phone_number="1234567890",
+            location="Test Location",
+            sub_location="Test Sub-location",
+            village="Test Village",
+        )
+        with self.assertRaises(ValidationError):
+            chp.full_clean()  # This should raise a ValidationError because 'user' is required

@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from .models import Mother
 from datetime import date
@@ -45,19 +46,24 @@ class MotherModelTest(TestCase):
         Test the max_length constraint on CharFields.
         """
         mother = Mother(
-            first_name="A" * 100,  # Exceeding max_length
-            last_name="B" * 100,
+            first_name="A" * 101,  # Exceeding max_length
+            last_name="B" * 101,  # Exceeding max_length
             date_of_birth=date(1980, 5, 15),
             no_of_children=3,
             date_of_reg=date(2024, 1, 10),
             tel_no="123-456-7890",
             marital_status="Married",
-            sub_location="C" * 100,
-            village="D" * 100,
+            sub_location="C" * 101,  # Exceeding max_length
+            village="D" * 101,  # Exceeding max_length
         )
+        # full_clean will trigger validation checks for max_length
+        with self.assertRaises(ValidationError):
+            mother.full_clean()  # This should raise a validation error
 
     def test_no_of_children_validation(self):
         """
         Test that no_of_children field accepts only non-negative integers.
         """
         self.mother.no_of_children = -1
+        with self.assertRaises(ValidationError):
+            self.mother.full_clean()  # This should raise a validation error for the negative value

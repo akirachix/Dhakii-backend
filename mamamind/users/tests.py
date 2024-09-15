@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
@@ -66,3 +67,82 @@ class UserModelTest(TestCase):
         self.user.user_role = "admin"
         self.user.save()
         self.assertEqual(self.user.user_role, "admin")
+
+
+class UserModelUnhappyPathTest(TestCase):
+    def test_user_creation_without_username(self):
+        """
+        Unhappy path: Test that creating a user without a username raises an error.
+        """
+        with self.assertRaises(ValidationError):
+            user = User(
+                email="userwithoutusername@example.com",
+                username=None,  # No username provided
+                password="password123",
+            )
+            user.full_clean()  # This triggers model validation
+
+    def test_user_creation_with_invalid_email(self):
+        """
+        Unhappy path: Test that creating a user with an invalid email format raises a ValidationError.
+        """
+        with self.assertRaises(ValidationError):
+            user = User(
+                email="invalid-email",  # Invalid email format
+                username="invalidemailuser",
+                password="password123",
+            )
+            user.full_clean()  # This should raise a ValidationError for invalid email
+
+    def test_user_creation_with_existing_email(self):
+        """
+        Unhappy path: Test that creating a user with an existing email raises an IntegrityError.
+        """
+        User.objects.create_user(
+            email="existinguser@example.com",
+            username="existinguser",
+            password="password123",
+        )
+        with self.assertRaises(ValidationError):
+            user = User(
+                email="existinguser@example.com",  # Duplicate email
+                username="newuser",
+                password="password123",
+            )
+            user.full_clean()  # This should raise a ValidationError for duplicate email
+
+    def test_user_creation_without_role(self):
+        """
+        Unhappy path: Test that creating a user without a role raises a ValidationError.
+        """
+        user = User(
+            email="noroleuser@example.com",
+            username="noroleuser",
+            password="password123",
+            user_role=None,  # No user role assigned
+        )
+        with self.assertRaises(ValidationError):
+            user.full_clean()  # This should raise a ValidationError
+
+    def test_user_creation_with_invalid_role(self):
+        """
+        Unhappy path: Test that creating a user with an invalid role raises a ValidationError.
+        """
+        user = User(
+            email="invalidroleuser@example.com",
+            username="invalidroleuser",
+            password="password123",
+            user_role="invalidrole",  # Invalid role
+        )
+        with self.assertRaises(ValidationError):
+            user.full_clean()  # This should raise a ValidationError for invalid role
+
+
+def test_user_without_password_fails(self):
+    """
+    Unhappy path: Test that creating a user without a password raises an error.
+    """
+    with self.assertRaises(ValueError):
+        User.objects.create_user(
+            email="nopassworduser@example.com", username="nopassworduser", password=None
+        )

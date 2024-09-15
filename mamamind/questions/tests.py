@@ -1,67 +1,98 @@
 from django.test import TestCase
-from django.contrib.auth import get_user_model
-from mother.models import Mother
-from community_health_promoter.models import CHP
-from screeningtestscore.models import ScreeningTestScore
-from datetime import date
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
+from .models import EPDSQuestion
 
 
-class ScreeningTestScoreModelTest(TestCase):
-    def setUp(self):
-        # Create a valid User instance
-        self.user = get_user_model().objects.create_user(
-            username="chpuser", email="chpuser@example.com", password="password123"
+class EPDSQuestionModelTest(TestCase):
+    def test_create_epds_question_with_missing_question(self):
+        # Test creating a question with a missing question text
+        question = EPDSQuestion(
+            option_1="Never",
+            first_score=0,
+            option_2="Sometimes",
+            second_score=1,
+            option_3="Often",
+            third_score=2,
+            option_4="Always",
+            forth_score=3,
         )
+        with self.assertRaises(ValidationError):
+            question.full_clean()  # This will trigger the validation
 
-        # Create a valid Mother instance
-        self.mother = Mother.objects.create(
-            first_name="Jane",
-            last_name="Doe",
-            date_of_birth="1990-01-01",
-            no_of_children=2,
-            date_of_reg=date.today(),
-            tel_no="1234567890",
-            marital_status="Married",
-            sub_location="Test Sub-location",
-            village="Test Village",
+    def test_create_epds_question_with_invalid_scores(self):
+        # Test creating a question with an invalid score
+        question = EPDSQuestion(
+            question="How often have you been bothered by feeling down, depressed, or hopeless?",
+            option_1="Never",
+            first_score=-1,  # Invalid score
+            option_2="Sometimes",
+            second_score=1,
+            option_3="Often",
+            third_score=2,
+            option_4="Always",
+            forth_score=3,
         )
+        with self.assertRaises(ValidationError):
+            question.full_clean()  # This will trigger the validation
 
-        # Create a valid CHP instance, providing a user
-        self.chp = CHP.objects.create(
-            user=self.user,  # Pass the created user here
-            registered_date=date.today(),
-            reg_no="CHP001",
-            phone_number="0987654321",
-            location="Test Location",
-            sub_location="Test Sub-location",
-            village="Test Village",
+    def test_create_epds_question_with_duplicate_question(self):
+        # Create the first question
+        EPDSQuestion.objects.create(
+            question="How often have you been bothered by feeling down, depressed, or hopeless?",
+            option_1="Never",
+            first_score=0,
+            option_2="Sometimes",
+            second_score=1,
+            option_3="Often",
+            third_score=2,
+            option_4="Always",
+            forth_score=3,
         )
+        # Attempt to create a duplicate question
+        with self.assertRaises(IntegrityError):
+            EPDSQuestion.objects.create(
+                question="How often have you been bothered by feeling down, depressed, or hopeless?",  # Duplicate
+                option_1="Never",
+                first_score=0,
+                option_2="Sometimes",
+                second_score=1,
+                option_3="Often",
+                third_score=2,
+                option_4="Always",
+                forth_score=3,
+            )
 
-        # Create a ScreeningTestScore instance with valid mother and chp
-        self.screening_test = ScreeningTestScore.objects.create(
-            mother_id=self.mother,
-            chp_id=self.chp,
-            test_date=date.today(),
-            total_score=15,
+
+class EPDSQuestionModelTest(TestCase):
+    def test_create_valid_epds_question(self):
+        # Test creating a valid EPDSQuestion instance
+        question = EPDSQuestion(
+            question="How often have you been bothered by feeling down, depressed, or hopeless?",
+            option_1="Never",
+            first_score=0,
+            option_2="Sometimes",
+            second_score=1,
+            option_3="Often",
+            third_score=2,
+            option_4="Always",
+            forth_score=3,
         )
+        try:
+            question.full_clean()  # This will validate the instance
+            question.save()  # Save to the database
+        except ValidationError:
+            self.fail("EPDSQuestion instance raised ValidationError unexpectedly!")
 
-    def test_create_screening_test_score(self):
-        # Test that the ScreeningTestScore instance was created correctly
-        self.assertEqual(self.screening_test.mother_id, self.mother)
-        self.assertEqual(self.screening_test.chp_id, self.chp)
-        self.assertEqual(self.screening_test.total_score, 15)
-        self.assertEqual(self.screening_test.test_date, date.today())
-
-    def test_screening_test_score_str(self):
-        # Test the string representation of the ScreeningTestScore
-        expected_str = f"Test {self.screening_test.test_id} - Total Score: 15"
-        self.assertEqual(str(self.screening_test), expected_str)
-
-    def test_total_score_positive(self):
-        # Ensure total score is a positive integer
-        self.assertGreaterEqual(self.screening_test.total_score, 0)
-
-    def test_screening_test_score_relationships(self):
-        # Ensure relationships with Mother and CHP models work correctly
-        self.assertEqual(self.screening_test.mother_id.first_name, "Jane")
-        self.assertEqual(self.screening_test.chp_id.reg_no, "CHP001")
+        # Verify the instance was saved correctly
+        saved_question = EPDSQuestion.objects.get(
+            question="How often have you been bothered by feeling down, depressed, or hopeless?"
+        )
+        self.assertEqual(saved_question.option_1, "Never")
+        self.assertEqual(saved_question.first_score, 0)
+        self.assertEqual(saved_question.option_2, "Sometimes")
+        self.assertEqual(saved_question.second_score, 1)
+        self.assertEqual(saved_question.option_3, "Often")
+        self.assertEqual(saved_question.third_score, 2)
+        self.assertEqual(saved_question.option_4, "Always")
+        self.assertEqual(saved_question.forth_score, 3)
