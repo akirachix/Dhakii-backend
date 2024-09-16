@@ -91,13 +91,12 @@ class NurseListView(APIView):
     
     def post(self, request):
         """This is for adding a nurse to the list of nurses"""
-        my_user= Nurse.objects.get_or_create(user_id=request.user_id)[0]
-        serializer = NurseSerializer(data=request.data, instance=my_user)
+        serializer = NurseSerializer(data=request.data)
         if serializer.is_valid():
-           serializer.save()
-           return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-           return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         
 class NurseDetailView(APIView):
