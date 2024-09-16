@@ -1,100 +1,3 @@
-# import os
-# import django
-# import requests
-# from bs4 import BeautifulSoup
-# import sys
-
-# # Ensure the path includes the Django project directory
-# sys.path.append('/home/student/Documents/holder/Dhakii-backend/mamamind')
-
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'mamamind.settings')
-# django.setup()
-
-# from careguide.models import Careguide
-
-# urls_scrape = [
-#     'https://magazine.medlineplus.gov/article/getting-help-for-mental-health/',
-#     'https://www.medicalnewstoday.com/articles/160774#micronutrients',
-#     'https://www.healthline.com/nutrition/10-reasons-why-good-sleep-is-important#2.-Can-improve-concentration-and-productivity',
-#     'https://www.betterhealth.vic.gov.au/health/healthyliving/postnatal-exercise',
-# ]
-
-# def scrape_article(url):
-#     try:
-#         response = requests.get(url)
-#         response.raise_for_status()
-#         soup = BeautifulSoup(response.content, 'html.parser')
-
-#         title = soup.find('title').get_text(strip=True)
-
-#         author = ''
-#         author_meta = soup.find('meta', {'name': 'author'})
-#         if author_meta:
-#             author = author_meta.get('content', '').strip()
-#         else:
-#             author_tag = soup.find('span', class_='author') or soup.find('a', class_='author')
-#             if author_tag:
-#                 author = author_tag.get_text(strip=True)
-
-#         body_content = soup.find('div', class_='main-content') or soup.find('div', id='content')
-#         text = ''
-#         if body_content:
-#             for unwanted in body_content.find_all(['footer', 'nav', 'aside']):
-#                 unwanted.decompose()
-#             text = ' '.join([p.get_text(strip=True) for p in body_content.find_all('p')])
-
-#         return {
-#             'Title': title,
-#             'Author': author,
-#             'Content': text
-#         }
-#     except Exception as e:
-#         print(f'Error scraping article from {url}: {e}')
-#         return None
-
-# for url in urls_scrape:
-#     try:
-#         article_data = scrape_article(url)
-#         if article_data:
-#             # Debugging: print the article data
-#             print(f'Article data for {url}: {article_data}')
-#             Careguide.objects.update_or_create(
-#                 title=article_data.get('Title', ''),
-#                 defaults={
-#                     'author': article_data.get('Author', ''),
-#                     'content': article_data.get('Content', '')
-#                 }
-#             )
-#             print(f'Successfully saved: {url}')
-#         else:
-#             print(f'Failed to get data for {url}')
-#     except Exception as e:
-#         print(f'Failed to save {url}: {e}')
-
-# urls_extract = [
-#     'https://www.mentalhealth.org.uk/explore-mental-health/publications/our-best-mental-health-tips',
-#     'https://www.whattoexpect.com/first-year/postpartum/postpartum-diet-nutrition-questions-answered/',
-#     'https://nichq.org/insight/better-sleep-breastfeeding-mothers-safer-sleep-babies',
-#     'https://www.betterhealth.vic.gov.au/health/healthyliving/postnatal-exercise',
-# ]
-
-# def extract_text(url):
-#     try:
-#         response = requests.get(url)
-#         response.raise_for_status()
-#         soup = BeautifulSoup(response.content, 'html.parser')
-
-#         title = soup.find('title').get_text(strip=True)
-
-#         for tag in soup(['script', 'style', 'footer', 'nav', 'header']):
-#             tag.decompose()
-
-#         text = soup.get_text(separator=' ', strip=True)
-
-#         return {
-#             'URL': url,
-            
-#         }
 
 import os
 import django
@@ -110,7 +13,7 @@ django.setup()
 
 from careguide.models import Careguide
 
-# Define URLs for scraping and extraction
+# Defining URLs for scraping and extraction
 urls_scrape = [
     'https://magazine.medlineplus.gov/article/getting-help-for-mental-health/',
     'https://www.medicalnewstoday.com/articles/160774#micronutrients',
