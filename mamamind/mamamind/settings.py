@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'users',
     'hospital',
     'community_health_promoter',
+    'careguide',
+    'django_crontab',
 
 ]
 REST_FRAMEWORK = {
@@ -227,3 +229,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+CRONJOBS = [
+('*/5 * * * *', 'careguide.tasks.my_cron_job')
+]

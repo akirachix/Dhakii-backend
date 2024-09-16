@@ -10,7 +10,16 @@ from questions.models import EPDSQuestion
 from answers.models import Answer
 from screeningtestscore.models import ScreeningTestScore
 from users.models import User
+from careguide.models import Careguide  
 
+# careguide
+class CareguideSerializer(serializers.ModelSerializer): 
+    class Meta:
+        model = Careguide  
+        fields = ['id', 'title', 'content', 'author']  
+
+    def __str__(self):
+        return self.title
 
 #nurse
 class NurseSerializer(serializers.ModelSerializer):

@@ -33,6 +33,47 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 
+from django.shortcuts import render
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from careguide.models import Careguide  
+from .serializers import CareguideSerializer  
+# from careguide.utils. import scrape_article  
+
+class CareguideListCreateView(generics.ListCreateAPIView):
+    queryset = Careguide.objects.all()
+    serializer_class = CareguideSerializer
+
+class ScrapeCareguideView(APIView):
+    def post(self, request):
+        url = request.data.get('url')
+        if not url:
+            return Response({"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+
+            article_data = scrape_article(url)
+            if article_data:
+                careguide = Careguide.objects.create(
+                    title=article_data.get('Title', ''),
+                    content=article_data.get('Content', ''),
+                    author=article_data.get('Author', ''),
+                )
+                serializer = CareguideSerializer(careguide)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"error": "Failed to scrape article"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CareguideListView(APIView):
+    def get(self, request):
+        careguides = Careguide.objects.all()
+        serializer = CareguideSerializer(careguides, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class NurseListView(APIView):
     """API View for getting a list of nurses"""
     def get(self, request):
@@ -89,6 +130,12 @@ class MotherListView(APIView):
     def post(self, request):
         """This is for adding a mother to the list of mothers"""
         serializer = MotherSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class HospitalListView(APIView):
     """API View for getting a list of hospitals"""
