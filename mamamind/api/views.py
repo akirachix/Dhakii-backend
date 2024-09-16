@@ -1,3 +1,6 @@
+from rest_framework.parsers import FileUploadParser
+from rest_framework.parsers import MultiPartParser
+from rest_framework.decorators import api_view, parser_classes
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import status
@@ -109,8 +112,20 @@ class NurseDetailView(APIView):
     
     def patch(self, request, pk):
         """This is for updating a specific nurse by using their unique id"""
-        nurse = Nurse.objects.get(pk=pk)
+        try:
+            nurse = Nurse.objects.get(pk=pk)
+        except Nurse.DoesNotExist:
+            logger.error('Nurse with pk %d not found for update.', pk)
+            return Response({"detail": "Nurse not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = NurseSerializer(nurse, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            logger.info('Nurse with pk %d updated successfully.', pk)
+            return Response(serializer.data)
+        else:
+            logger.error('Nurse update failed for pk %d: %s', pk, serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class MotherListView(APIView):
     """API View for getting a list of mothers"""
@@ -228,6 +243,12 @@ class NextOfKinDetailView(APIView):
         """This is for updating a specific nextofkin by using their unique id"""
         nextofkins = NextOfKin.objects.get(id=id)
         serializer = NextOfKinSerializer(nextofkins, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
         
 class HospitalDetailView(APIView):
     """This APIView is to show the detailed information about the hospital"""
@@ -247,6 +268,7 @@ class HospitalDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class CHPListView(APIView):
        """API View for getting a list of CHPs"""
        def get(self, request):
@@ -379,19 +401,21 @@ class InviteCHPTestView(APIView):
 
 @csrf_exempt
 @api_view(['GET', 'POST'])
+@parser_classes([MultiPartParser])
 def questions(request, question_id=None):
     if request.method == 'POST':
         if 'file' not in request.FILES:
             return Response({"error": "File not found."}, status=status.HTTP_400_BAD_REQUEST)
-        
         file = request.FILES['file']
         try:
+            # Read the CSV file using pandas
             data_df = pd.read_csv(file)
+            # Ensure required columns are present
             required_columns = ['question', 'option_1', 'first_score', 'option_2', 'second_score', 'option_3', 'third_score', 'option_4', 'forth_score']
             for column in required_columns:
                 if column not in data_df.columns:
                     return Response({"error": f"Missing column: {column}"}, status=status.HTTP_400_BAD_REQUEST)
-            
+            # Iterate over the rows and save them to the database
             for _, row in data_df.iterrows():
                 EPDSQuestion.objects.create(
                     question=row.get('question'),
@@ -404,12 +428,9 @@ def questions(request, question_id=None):
                     option_4=row.get('option_4'),
                     forth_score=row.get('forth_score'),
                 )
-            
             return Response({"message": "File uploaded successfully"}, status=status.HTTP_201_CREATED)
-        
         except Exception as e:
             return Response({"error": f"Can't process the file: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
     elif request.method == 'GET':
         try:
             if question_id:
@@ -423,11 +444,11 @@ def questions(request, question_id=None):
                 questions = EPDSQuestion.objects.all()[:10]
                 serializer = EPDSQuestionSerializer(questions, many=True)
                 return Response(serializer.data)
-        
         except Exception as e:
             return Response({"error": f"Can't retrieve data: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
     return Response({"error": "Invalid request method"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 
 class ScreeningTestScoreListView(APIView):
     def get(self, request):
