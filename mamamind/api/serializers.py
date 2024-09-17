@@ -112,7 +112,7 @@ class MinimalCHPSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CHP
-        fields = ['user_id', 'reg_no','sub_location']  
+        fields = ['user', 'reg_no','sub_location']  
     
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
