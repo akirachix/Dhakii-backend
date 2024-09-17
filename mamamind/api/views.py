@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from nurse.models import Nurse
 from nurse_admin.models import NurseAdmin
-from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer
+from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer
 import logging
 from django.contrib.auth import logout
 from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
@@ -27,7 +27,6 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from screeningtestscore.models import ScreeningTestScore
 from django.utils.dateparse import parse_date
-from answers.models import Answer
 import logging
 from users.models import User
 from .serializers import UserSerializer
@@ -35,6 +34,7 @@ from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
+from answers.models import Answer
 
 from django.shortcuts import render
 from rest_framework import generics
@@ -42,8 +42,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from careguide.models import Careguide  
-from .serializers import CareguideSerializer  
-# from careguide.utils. import scrape_article  
+from .serializers import CareguideSerializer 
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from .serializers import ScreeningTestScoreSerializer 
 
 class CareguideListCreateView(generics.ListCreateAPIView):
     queryset = Careguide.objects.all()
@@ -465,11 +468,29 @@ class ScreeningTestScoreListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        # Initialize the serializer with request data
         serializer = ScreeningTestScoreSerializer(data=request.data)
+        
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            test_date = request.data.get('test_date', None)
+            
+            if test_date:
+                test_date_obj = serializer.validated_data.get('test_date')
+                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date_obj)
+            else:
+                screening_tests = ScreeningTestScore.objects.all()
+            
+            result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
+            return Response({
+                "message": "Screening test score updated successfully",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
+
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+
 
 class ScreeningTestScoreDetailView(APIView):
     def get(self, request, pk):
@@ -484,13 +505,18 @@ class ScreeningTestScoreDetailView(APIView):
         try:
             screening_test = ScreeningTestScore.objects.get(pk=pk)
         except ScreeningTestScore.DoesNotExist:
-            return Response({"error": "Screening test not found"}, status=status.HTTP_404_NOT_FOUND)
-        serializer = ScreeningTestScoreSerializer(screening_test, data=request.data)
+            return Response({"error": "Screening test score not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ScreeningTestScoreSerializer(screening_test, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Return a success message along with the updated data
+            return Response({
+                "message": "Screening test score updated successfully",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class AnswerListCreateView(APIView):
@@ -508,16 +534,22 @@ class AnswerListCreateView(APIView):
            serializer.save()
            return Response(serializer.data, status=status.HTTP_201_CREATED)
        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+       
 class AnswerDetailView(APIView):
-   def get(self, request, pk):
-       try:
-           answer = Answer.objects.get(pk=pk)
-       except Answer.DoesNotExist:
-           return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
-       serializer = AnswerSerializer(answer)
-       return Response(serializer.data)
 
-logger = logging.getLogger(__name__)
+    def get(self, request, pk):
+        
+        """
+        Retrieve an answer by ID.
+        """
+        try:
+            answer = Answer.objects.get(pk=pk)
+        except Answer.DoesNotExist:
+            logger.error('Answer with ID %d not found.', pk)
+            return Response({"detail": "Answer not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = AnswerSerializer(answer)
+        logger.info('Answer with ID %d retrieved successfully.', pk)
+        return Response(serializer.data)
 
 class UserListView(APIView):
     permission_classes = [IsAuthenticated]  
@@ -732,4 +764,3 @@ class UserProfileView(APIView):
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
         
-

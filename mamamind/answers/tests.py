@@ -7,8 +7,6 @@ from datetime import date
 from mother.models import Mother
 from community_health_promoter.models import CHP
 from django.contrib.auth import get_user_model
-
-
 class AnswerModelTest(TestCase):
     def setUp(self):
         """
@@ -18,7 +16,6 @@ class AnswerModelTest(TestCase):
         self.user = get_user_model().objects.create_user(
             username="chpuser", email="chpuser@example.com", password="password123"
         )
-
         # Create Mother instance
         self.mother = Mother.objects.create(
             first_name="Jane",
@@ -31,7 +28,6 @@ class AnswerModelTest(TestCase):
             sub_location="SubLocation1",
             village="Village1",
         )
-
         # Create CHP instance
         self.chp = CHP.objects.create(
             user=self.user,
@@ -42,12 +38,10 @@ class AnswerModelTest(TestCase):
             sub_location="SubLocation1",
             village="Village1",
         )
-
         # Create a ScreeningTestScore instance
         self.test_score = ScreeningTestScore.objects.create(
             mother=self.mother, chp=self.chp, test_date=date.today(), total_score=15
         )
-
         # Create an EPDSQuestion instance using the correct field name
         self.question = EPDSQuestion.objects.create(
             question="How often have you felt sad?",  # Correct field name
@@ -60,8 +54,6 @@ class AnswerModelTest(TestCase):
             option_4="Nearly all the time",
             forth_score=3,
         )
-
-
 def test_answer_creation(self):
     """
     Happy path: Test if the Answer instance is created successfully.
@@ -69,14 +61,12 @@ def test_answer_creation(self):
     answer = Answer.objects.create(
         question=self.question, test=self.test_score, score=2
     )
-
     self.assertEqual(answer.question, self.question)
     self.assertEqual(answer.test, self.test_score)
     self.assertEqual(answer.score, 2)
     self.assertEqual(
         str(answer), f"Answer for Question {self.question.id} - Score: {answer.score}"
     )
-
     def test_missing_question(self):
         """
         Unhappy path: Test that missing question raises a ValidationError.
@@ -86,7 +76,6 @@ def test_answer_creation(self):
         )
         with self.assertRaises(ValidationError):
             answer.full_clean()  # This should raise a ValidationError
-
     def test_missing_test(self):
         """
         Unhappy path: Test that missing test raises a ValidationError.
@@ -94,7 +83,6 @@ def test_answer_creation(self):
         answer = Answer(question=self.question, test=None, score=2)  # Missing test
         with self.assertRaises(ValidationError):
             answer.full_clean()  # This should raise a ValidationError
-
     def test_missing_score(self):
         """
         Unhappy path: Test that missing score raises a ValidationError.
@@ -104,7 +92,6 @@ def test_answer_creation(self):
         )
         with self.assertRaises(ValidationError):
             answer.full_clean()  # This should raise a ValidationError
-
     def test_negative_score(self):
         """
         Unhappy path: Test that a negative score raises a ValidationError.

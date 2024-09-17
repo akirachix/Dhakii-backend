@@ -3,7 +3,7 @@ from django.db import models
 
 
 class EPDSQuestion(models.Model):
-    question = models.TextField(unique=True)  # Ensure unique questions
+    question = models.TextField(unique=True)  
     option_1 = models.TextField()
     first_score = models.IntegerField()
     option_2 = models.TextField()

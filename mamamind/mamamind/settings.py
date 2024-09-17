@@ -54,13 +54,13 @@ INSTALLED_APPS = [
     'next_of_kin',
     'questions',
     'screeningtestscore',
-    'answers',
     'authentication',
     'users',
     'hospital',
     'community_health_promoter',
     'careguide',
     'django_crontab',
+    'answers',
 
 ]
 REST_FRAMEWORK = {
