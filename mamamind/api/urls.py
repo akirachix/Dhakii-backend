@@ -12,6 +12,7 @@ from .views import LogoutView
 from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
+
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
 from .views import CareguideListCreateView, ScrapeCareguideView
 
@@ -29,10 +30,8 @@ urlpatterns = [
     path('screeningtestscore/', ScreeningTestScoreListView.as_view(), name='screeningtestscore'),
     path('screeningtestscore/<int:pk>/', ScreeningTestScoreDetailView.as_view(), name='screeningtestscore_detail'),
     path('screeningtestscore/date/<int:year>/<int:month>/<int:day>/', ScreeningTestScoreListView.as_view(), name='screeningtestscore_date'),
-    path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
-    path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
-    path('users/', UserListView.as_view(), name='user_view'),  # For POST and GET (authenticated user)
-    path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  # For GET, PATCH (user by ID)
+    path('users/', UserListView.as_view(), name='user_view'), 
+    path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  
     path('generate_token/', views.generate_token, name='generate_token'),
     path('users/search/', UserSearchView.as_view(), name='user_search_view'),
     path('users/login/', LoginView.as_view(), name='login'),
@@ -54,6 +53,9 @@ urlpatterns = [
     path('nextofkins/search/', NextOfKinListView.as_view(), name='nextofkin-search'),
     path('careguides/', CareguideListCreateView.as_view(), name='careguide-list-create'),  
     path('scrape_careguide/', ScrapeCareguideView.as_view(), name='scrape-careguide'),
+    path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
+    path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
+
 ]
 
 
