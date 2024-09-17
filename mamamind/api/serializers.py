@@ -137,24 +137,8 @@ class EPDSQuestionSerializer(serializers.ModelSerializer):
 class ScreeningTestScoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScreeningTestScore
-        fields = ['test_date', 'total_score', 'mother_id', 'chp_id']  # Include all required fields here
+        fields = '__all__'
         
-
-    def validate(self, data):
-        # Ensure all required fields are provided
-        if 'test_date' not in data:
-            raise serializers.ValidationError({"test_date": "This field is required."})
-        if 'total_score' not in data:
-            raise serializers.ValidationError({"total_score": "This field is required."})
-        if 'mother_id' not in data:
-            raise serializers.ValidationError({"mother_id": "This field is required."})
-        if 'chp_id' not in data:
-            raise serializers.ValidationError({"chp_id": "This field is required."})
-        return data
-
-
-
-
         
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
