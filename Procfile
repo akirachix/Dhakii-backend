@@ -1,0 +1,1 @@
+web: gunicorn mamamind.wsgi --log-file -
