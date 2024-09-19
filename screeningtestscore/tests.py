@@ -46,11 +46,11 @@ class ScreeningTestScoreModelTest(TestCase):
         Happy path: Test if the ScreeningTestScore instance is created successfully.
         """
         screening_test = ScreeningTestScore.objects.create(
-            mother=self.mother, chp=self.chp, test_date=date.today(), total_score=10
+            mother_id=self.mother, chp_id=self.chp, test_date=date.today(), total_score=10
         )
 
-        self.assertEqual(screening_test.mother, self.mother)
-        self.assertEqual(screening_test.chp, self.chp)
+        self.assertEqual(screening_test.mother_id, self.mother)
+        self.assertEqual(screening_test.chp_id, self.chp)
         self.assertEqual(screening_test.total_score, 10)
         self.assertIsInstance(screening_test.test_date, date)
         self.assertEqual(
@@ -98,8 +98,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
         Unhappy path: Test that missing total_score raises a ValidationError.
         """
         screening_test = ScreeningTestScore(
-            mother=self.mother,
-            chp=self.chp,
+            mother_id=self.mother,
+            chp_id=self.chp,
             test_date=date.today(),
             total_score=None,  # Missing total_score
         )
@@ -111,8 +111,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
         Unhappy path: Test that a negative total_score raises a ValidationError.
         """
         screening_test = ScreeningTestScore(
-            mother=self.mother,
-            chp=self.chp,
+            mother_id=self.mother,
+            chp_id=self.chp,
             test_date=date.today(),
             total_score=-5,  # Invalid negative score
         )
@@ -124,8 +124,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
         Unhappy path: Test that missing mother raises a ValidationError.
         """
         screening_test = ScreeningTestScore(
-            mother=None,  # Missing mother
-            chp=self.chp,
+            mother_id=None,  # Missing mother
+            chp_id=self.chp,
             test_date=date.today(),
             total_score=10,
         )
@@ -137,8 +137,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
         Unhappy path: Test that missing CHP raises a ValidationError.
         """
         screening_test = ScreeningTestScore(
-            mother=self.mother,
-            chp=None,  # Missing CHP
+            mother_id=self.mother,
+            chp_id=None,  # Missing CHP
             test_date=date.today(),
             total_score=10,
         )
@@ -150,8 +150,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
         Unhappy path: Test that missing test_date raises a ValidationError.
         """
         screening_test = ScreeningTestScore(
-            mother=self.mother,
-            chp=self.chp,
+            mother_id=self.mother,
+            chp_id=self.chp,
             test_date=None,  # Missing test_date
             total_score=10,
         )
@@ -166,8 +166,8 @@ class ScreeningTestScoreModelUnhappyPathTest(TestCase):
             2100, 1, 1
         )  # Future date is invalid (depending on business rules)
         screening_test = ScreeningTestScore(
-            mother=self.mother,
-            chp=self.chp,
+            mother_id=self.mother,
+            chp_id=self.chp,
             test_date=future_date,  # Invalid future date
             total_score=10,
         )
