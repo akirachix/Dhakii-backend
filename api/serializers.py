@@ -13,16 +13,6 @@ from answers.models import Answer
 from rest_framework import serializers
 from careguide.models import Careguide
 
-class CareguideSerializer(serializers.ModelSerializer):
-    """
-    CareguideSerializer: Serializes the Careguide model for API interactions.
-    Converts Careguide objects to and from JSON.
-    """
-    class Meta:
-        model = Careguide
-        fields = '__all__'
-
-
 #nurse
 class NurseSerializer(serializers.ModelSerializer):
     """
