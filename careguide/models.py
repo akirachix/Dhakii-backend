@@ -1,21 +1,26 @@
-from django.core.exceptions import ValidationError
 from django.db import models
+from django.core.exceptions import ValidationError
+from tinymce.models import HTMLField
 
 class Careguide(models.Model):
-    id = models.AutoField(primary_key=True)
+    careguide_id = models.AutoField(primary_key=True)
+    category = models.CharField(max_length=200)
     title = models.CharField(max_length=255)
-    content = models.TextField()
+    image = models.URLField(max_length=255, blank=True, null=True)
+    subtitle = models.CharField(max_length=255, blank=True, null=True)
+    content = HTMLField()
     author = models.CharField(max_length=100, blank=True, null=True)
-    last_updated = models.DateTimeField(auto_now=True) 
+    last_updated = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
     
     def clean(self):
-    
         if not self.title:
             raise ValidationError('Title cannot be empty.')
-        
+    
     def save(self, *args, **kwargs):
-        self.clean()  
-        super().save(*args, **kwargs) 
-
+        self.clean()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.title

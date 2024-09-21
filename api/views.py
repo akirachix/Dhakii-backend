@@ -42,11 +42,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from careguide.models import Careguide  
-from .serializers import CareguideSerializer 
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from .serializers import ScreeningTestScoreSerializer 
+from django.http import Http404
+from careguide.models import Careguide
+from .serializers import CareguideSerializer
 
 class CareguideListCreateView(generics.ListCreateAPIView):
     queryset = Careguide.objects.all()
@@ -73,11 +75,6 @@ class ScrapeCareguideView(APIView):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class CareguideListView(APIView):
-    def get(self, request):
-        careguides = Careguide.objects.all()
-        serializer = CareguideSerializer(careguides, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class NurseListView(APIView):
@@ -745,13 +742,12 @@ class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Assuming you have a User model and a UserSerializer to handle user data
-        user = request.user  # Get the logged-in user
+        user = request.user 
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request):
-        user = request.user  # Get the logged-in user
+        user = request.user 
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -763,4 +759,84 @@ class UserProfileView(APIView):
             "message": "Invalid data",
             "errors": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+#careguide
+
+class CareguideListView(APIView):
+
+    def post(self, request):
+        """
+        Create a new careguide entry.
+        """
+        serializer = CareguideSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    """
+    API View for getting a list of careguides and creating a new careguide.
+    """
+    
+    def get(self, request):
+        """
+        Get a list of careguides.
+        """
+        careguides = self.get_queryset()
+        serializer = CareguideSerializer(careguides, many=True)
+        return Response(serializer.data)
+
+
+    def get_queryset(self):
+        """
+        Retrieve a queryset of careguides. Optionally filter by category.
+        """
+        queryset = Careguide.objects.filter(is_active=True)
+        category = self.request.query_params.get('category', None)
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset
+
+class CareguideDetailView(APIView):
+    """
+    API View for retrieving, updating, and soft-deleting a specific careguide.
+    """
+
+    def get_object(self, pk):
+        """
+        Helper method to get a careguide object by primary key.
+        """
+        try:
+            return Careguide.objects.get(pk=pk)
+        except Careguide.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        """
+        Retrieve a specific careguide by its primary key.
+        """
+        careguide = self.get_object(pk)
+        serializer = CareguideSerializer(careguide)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        """
+        Partially update a specific careguide.
+        """
+        careguide = self.get_object(pk)
+        serializer = CareguideSerializer(careguide, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """
+        Soft-delete a specific careguide by marking it inactive instead of deleting it from the database.
+        """
+        careguide = self.get_object(pk)
+        careguide.is_active = False
+        careguide.save()
+        return Response({"message": "Article deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         

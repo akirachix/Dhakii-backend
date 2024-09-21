@@ -12,6 +12,7 @@ db.sqlite3
 .venv/
 venv/
 env/
+.env/
 # IDE and editor settings
 .vscode/
 .idea/ *
