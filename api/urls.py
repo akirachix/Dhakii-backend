@@ -12,9 +12,10 @@ from .views import LogoutView
 from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
-
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
-from .views import CareguideListCreateView, ScrapeCareguideView
+from .views import ScrapeCareguideView
+
+from .views import CareguideListView, CareguideDetailView
 
 urlpatterns = [
     path('nurses/', NurseListView.as_view(), name='nurse_list_view'),
@@ -51,10 +52,12 @@ urlpatterns = [
     path('nextofkins/', NextOfKinListView.as_view(), name='nextofkins_list'),  
     path('nextofkins/<int:id>/', NextOfKinDetailView.as_view(),name='nextofkin_detail_view'),
     path('nextofkins/search/', NextOfKinListView.as_view(), name='nextofkin-search'),
-    path('careguides/', CareguideListCreateView.as_view(), name='careguide-list-create'),  
     path('scrape_careguide/', ScrapeCareguideView.as_view(), name='scrape-careguide'),
     path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
     path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
+    
+    path('careguides/', CareguideListView.as_view(), name='careguide-list'),
+    path('careguides/<int:pk>/', CareguideDetailView.as_view(), name='careguide-detail'),
 
 ]
 
