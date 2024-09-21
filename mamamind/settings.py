@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'careguide',
     'django_crontab',
     'answers',
+    'tinymce',
 
 ]
 

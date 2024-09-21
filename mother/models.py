@@ -10,7 +10,6 @@ class Mother(models.Model):
     no_of_children = models.PositiveIntegerField()  # Only allows non-negative integers
     date_of_reg = models.DateField(null=True, blank=True)
     tel_no = models.CharField(max_length=15)
-
     marital_status = models.CharField(max_length=20)
     sub_location = models.CharField(max_length=100)
     village = models.CharField(max_length=100)
