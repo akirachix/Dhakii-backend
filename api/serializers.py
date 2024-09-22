@@ -10,15 +10,8 @@ from screeningtestscore.models import ScreeningTestScore
 from users.models import User
 from careguide.models import Careguide  
 from answers.models import Answer
-
-# careguide
-class CareguideSerializer(serializers.ModelSerializer): 
-    class Meta:
-        model = Careguide  
-        fields = ['id', 'title', 'content', 'author']  
-
-    def __str__(self):
-        return self.title
+from rest_framework import serializers
+from careguide.models import Careguide
 
 #nurse
 class NurseSerializer(serializers.ModelSerializer):
@@ -153,6 +146,19 @@ class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
         fields = ['id', 'question', 'test', 'score']
+
+
+#caregude
+
+class CareguideSerializer(serializers.ModelSerializer):
+    """
+    CareguideSerializer: Serializes the Careguide model for API interactions.
+    Converts Careguide objects to and from JSON.
+    """
+    class Meta:
+        model = Careguide
+        fields = '__all__'
+
 
 
 
