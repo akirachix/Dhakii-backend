@@ -1,5 +1,4 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 from .views import MotherListView,MotherDetailView
 from .views import NextOfKinListView,NextOfKinDetailView
 from .views import HospitalDetailView,HospitalListView,ChpDetailView,CHPListView,InviteCHPTestView
@@ -9,7 +8,6 @@ from . import views
 from .views import UserSearchView
 from .views import LoginView
 from .views import LogoutView
-from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
@@ -21,11 +19,9 @@ urlpatterns = [
     path('nurses/', NurseListView.as_view(), name='nurse_list_view'),
     path('nurses/search/', NurseListView.as_view(), name='nurse_search'),
     path('nurses/<int:pk>/', NurseDetailView.as_view(), name='nurse_detail'),
-
     path('nurse_admins/', NurseAdminListView.as_view(), name='nurse_admin_list_view'),
     path('nurse_admins/search/', NurseAdminListView.as_view(), name='nurse_admin_search'),
     path('nurse_admins/<int:pk>/', NurseAdminDetailView.as_view(), name='nurse_admin_detail'),
-
     path('questions/', questions, name='questions'), 
     path('questions/<int:question_id>/', questions, name='question_detail'),
     path('screeningtestscore/', ScreeningTestScoreListView.as_view(), name='screeningtestscore'),
@@ -33,11 +29,8 @@ urlpatterns = [
     path('screeningtestscore/date/<int:year>/<int:month>/<int:day>/', ScreeningTestScoreListView.as_view(), name='screeningtestscore_date'),
     path('users/', UserListView.as_view(), name='user_view'), 
     path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  
-    path('generate_token/', views.generate_token, name='generate_token'),
     path('users/search/', UserSearchView.as_view(), name='user_search_view'),
     path('users/login/', LoginView.as_view(), name='login'),
-    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('users/logout/', LogoutView.as_view(), name='logout'),
     path('users/roles/', UserRoleListCreateView.as_view(), name='user_roles'),
     path('users/profile/', UserProfileView.as_view(), name='user_profile'),
@@ -55,7 +48,6 @@ urlpatterns = [
     path('scrape_careguide/', ScrapeCareguideView.as_view(), name='scrape-careguide'),
     path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
     path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
-    
     path('careguides/', CareguideListView.as_view(), name='careguide-list'),
     path('careguides/<int:pk>/', CareguideDetailView.as_view(), name='careguide-detail'),
 

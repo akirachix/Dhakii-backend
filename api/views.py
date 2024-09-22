@@ -10,9 +10,6 @@ from nurse_admin.models import NurseAdmin
 from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer
 import logging
 from django.contrib.auth import logout
-from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from mother.models import Mother
 from next_of_kin.models import NextOfKin
 from django.shortcuts import get_object_or_404
@@ -549,7 +546,7 @@ class AnswerDetailView(APIView):
         return Response(serializer.data)
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [AllowAny] 
 
     def post(self, request):
         """
@@ -615,9 +612,24 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()  # Save the new user
+            # Generate JWT tokens but do not include them in the response
+            refresh = RefreshToken.for_user(user)
+            # Return success message without token in response
+            response = Response({
+                'message': 'Registration successful',
+            }, status=status.HTTP_201_CREATED)
+            # Set the access token in an HTTP-only cookie
+            response.set_cookie(
+                key='access_token',  # Adjust the cookie name if needed
+                value=str(refresh.access_token),
+                httponly=True,  # Prevent client-side access
+                secure=True,  # Ensure it's sent over HTTPS (use False in development)
+                samesite='Lax',  # Adjust SameSite attribute based on your requirements
+            )
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class YourProtectedView(APIView):
     permission_classes = [IsAuthenticated]
@@ -627,49 +639,67 @@ class YourProtectedView(APIView):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+    
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-
-        # Authenticate user
+        
+        if not email or not password:
+            return Response({'error': 'Please provide both email and password'}, status=400)
+        
         user = authenticate(request, email=email, password=password)
-
-        if user is not None:
-            # Generate tokens
+        
+        if user:
             refresh = RefreshToken.for_user(user)
-            return Response({
-                'success': 'Successfully logged in.',
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
+            response = Response({
+                'message': 'Login successful',
+                'access_token': str(refresh.access_token),  # Return access token
+                'refresh_token': str(refresh), 
+                'userId':user.id,
+                'role': user.role 
             }, status=status.HTTP_200_OK)
+            
+            # Optionally set the token in the cookie
+            response.set_cookie(
+                key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=False,  # Set to True for production
+                samesite='Lax',
+            )
+            return response
         else:
-            return Response({
-                'error': 'Invalid credentials.'
-            }, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Invalid credentials'}, status=401)
+
+
+
 
 class CreateAdminUser(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        email = request.data.get('email', '')
-        first_name = request.data.get('firstname')
-        last_name = request.data.get('lastname')
+        username = request.data.get("username")
+        password = request.data.get("password")
+        email = request.data.get("email", "")
+        first_name = request.data.get("firstname")
+        last_name = request.data.get("lastname")
+
         if not User.objects.filter(username=username).exists():
-            User.objects.create_superuser(first_name=first_name, last_name=last_name, username=username, email=email, password=password)
-            return Response({"detail": "Superuser created successfully"}, status=status.HTTP_201_CREATED)
-        return Response({"detail": "Superuser already exists"}, status=status.HTTP_400_BAD_REQUEST)
-
-
-@csrf_exempt
-def generate_token(request):
-    user,created =User.objects.get_or_create(username='dummyuser')
-    refresh = RefreshToken.for_user(user)
-    return JsonResponse({
-        'access':str(refresh.access_token),
-        'refresh':str(refresh)
-    })
-    
+            User.objects.create_superuser(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                email=email,
+                password=password,
+            )
+            return Response(
+                {"detail": "Superuser created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(
+            {"detail": "Superuser already exists"}, status=status.HTTP_400_BAD_REQUEST
+        )
     
     
 class UserSearchView(APIView):
@@ -696,26 +726,6 @@ class LogoutView(APIView):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        # Create a token but do not include it in the response
-        token = super().get_token(user)
-        return token
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-    def post(self, request, *args, **kwargs):
-        # Call the super method to get the default response
-        response = super().post(request, *args, **kwargs)
-        
-        # Customize the response to only include the success message
-        if response.status_code == status.HTTP_200_OK:
-            return Response({"message": "Successfully logged in"}, status=status.HTTP_200_OK)
-        
-        return response
     
     
 roles = ["Admin", "Nurse", "CHP"]

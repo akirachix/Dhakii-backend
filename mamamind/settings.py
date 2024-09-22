@@ -86,7 +86,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware'
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -236,12 +236,6 @@ AUTH0_DOMAIN = os.getenv('AUTH0_DOMAIN',"")
 REDIRECT_URI = os.getenv('REDIRECT_URI', "")
 
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=365*10),  
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=365*10),  
-    'ROTATE_REFRESH_TOKENS': False,
-    'BLACKLIST_AFTER_ROTATION': True,
-}
 
 CRONJOBS = [
 ('*/5 * * * *', 'careguide.tasks.my_cron_job')
