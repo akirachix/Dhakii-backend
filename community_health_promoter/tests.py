@@ -22,7 +22,6 @@ class CHPModelTest(TestCase):
             reg_no="CHP123",
             phone_number="1234567890",
             location="Test Location",
-             email='chp@example.com',
             sub_location="Test Sub-location",
             village="Test Village",
 
