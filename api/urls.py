@@ -9,12 +9,11 @@ from . import views
 from .views import UserSearchView
 from .views import LoginView
 from .views import LogoutView
-from .views import CustomTokenObtainPairView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
 from .views import ScrapeCareguideView
-
+from api.views import InviteCHPTestView
 from .views import CareguideListView, CareguideDetailView
 
 urlpatterns = [
@@ -33,11 +32,8 @@ urlpatterns = [
     path('screeningtestscore/date/<int:year>/<int:month>/<int:day>/', ScreeningTestScoreListView.as_view(), name='screeningtestscore_date'),
     path('users/', UserListView.as_view(), name='user_view'), 
     path('user/<int:id>/', UserDetailView.as_view(), name='user_detail_view'),  
-    path('generate_token/', views.generate_token, name='generate_token'),
     path('users/search/', UserSearchView.as_view(), name='user_search_view'),
     path('users/login/', LoginView.as_view(), name='login'),
-    path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('users/logout/', LogoutView.as_view(), name='logout'),
     path('users/roles/', UserRoleListCreateView.as_view(), name='user_roles'),
     path('users/profile/', UserProfileView.as_view(), name='user_profile'),
@@ -45,7 +41,6 @@ urlpatterns = [
     path('hospitals/<int:id>/', HospitalDetailView.as_view(), name='hospital_detail_view'),
     path('chps/', CHPListView.as_view(), name='chp_list_view'),
     path('chps/<int:id>/', ChpDetailView.as_view(), name='chp_detail_view'),
-    path('api/invite_chp_test/', InviteCHPTestView.as_view(), name='invite_chp_test'),
     path('mothers/search/', MotherListView.as_view(), name='mother-search'),  
     path('mothers/', MotherListView.as_view(), name='mothers_list_view'),  
     path('mothers/<int:id>/', MotherDetailView.as_view(), name='mother_detail_view'), 
@@ -57,7 +52,10 @@ urlpatterns = [
     path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
     
     path('careguides/', CareguideListView.as_view(), name='careguide-list'),
-    path('careguides/<int:pk>/', CareguideDetailView.as_view(), name='careguide-detail'),
+    path('careguides/<int:id>/', CareguideDetailView.as_view(), name='careguide-detail'),
+    path('invite_chp_test/', InviteCHPTestView.as_view(), name='invite_chp_test'),
+
+    
 
 ]
 
