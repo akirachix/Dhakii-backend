@@ -98,9 +98,20 @@ class MinimalCHPSerializer(serializers.ModelSerializer):
     sub_location = serializers.SerializerMethodField()
     def get_sub_location(self, obj):
         return obj.sub_location
+
     class Meta:
         model = CHP
         fields = ['user_id', 'reg_no','sub_location']
+
+
+class InviteCHPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    user_id = serializers.IntegerField()
+
+
+    def validate_email(self, value):
+        return value
+
 
     
     
@@ -139,6 +150,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'username', 'first_name', 'last_name', 'password','phone_number','user_role']
+
 
 
 class AnswerSerializer(serializers.ModelSerializer):
