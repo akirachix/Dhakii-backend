@@ -1,8 +1,7 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
 from .views import MotherListView,MotherDetailView
 from .views import NextOfKinListView,NextOfKinDetailView
-from .views import HospitalDetailView,HospitalListView,ChpDetailView,CHPListView,InviteCHPTestView
+from .views import HospitalDetailView,HospitalListView,ChpDetailView,CHPListView,InviteCHPDetailView
 from .views import questions, ScreeningTestScoreListView, ScreeningTestScoreDetailView, AnswerListCreateView, AnswerDetailView
 from .views import UserListView, UserDetailView
 from . import views
@@ -13,7 +12,7 @@ from .views import UserRoleListCreateView
 from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
 from .views import ScrapeCareguideView
-from api.views import InviteCHPTestView
+from api.views import InviteCHPDetailView
 from .views import CareguideListView, CareguideDetailView
 
 urlpatterns = [
@@ -53,7 +52,7 @@ urlpatterns = [
     
     path('careguides/', CareguideListView.as_view(), name='careguide-list'),
     path('careguides/<int:id>/', CareguideDetailView.as_view(), name='careguide-detail'),
-    path('invite_chp_test/', InviteCHPTestView.as_view(), name='invite_chp_test'),
+    path('invite_chp_test/', InviteCHPDetailView.as_view(), name='invite_chp_test'),
 
     
 

@@ -374,7 +374,7 @@ class NurseAdminDetailView(APIView):
 
 logger = logging.getLogger(__name__)
 
-class InviteCHPTestView(APIView):
+class InviteCHPDetailView(APIView):
     """
     View to send an email invitation to a CHP based on their user ID and email.
     """
@@ -657,6 +657,8 @@ class YourProtectedView(APIView):
         return Response({"message": "You have access to this view!"})
 
 
+
+
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
@@ -666,33 +668,19 @@ class LoginView(APIView):
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            # Generate tokens
-            refresh = RefreshToken.for_user(user)
+            # User is authenticated, return user info
             return Response({
-                'success': 'Successfully logged in.',
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
-            }, status=status.HTTP_200_OK)
-            response = Response({
                 'message': 'Login successful',
-                'access_token': str(refresh.access_token),  
-                'refresh_token': str(refresh), 
-                'userId':user.id,
+                'userId': user.id,
                 'role': user.role 
             }, status=status.HTTP_200_OK)
-            
-            response.set_cookie(
-                key=settings.SIMPLE_JWT['AUTH_COOKIE'],
-                value=str(refresh.access_token),
-                httponly=True,
-                secure=False,  
-                samesite='Lax',
-            )
-            return response
         else:
             return Response({
                 'error': 'Invalid credentials.'
             }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 
 class CreateAdminUser(APIView):
     permission_classes = [AllowAny]
