@@ -6,28 +6,32 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from nurse.models import Nurse
+from django.db import IntegrityError
 from nurse_admin.models import NurseAdmin
-from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer
+from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer,InviteCHPSerializer
 import logging
+from django.template.loader import render_to_string
+from django.contrib.auth import get_user_model 
 from django.contrib.auth import logout
-from rest_framework_simplejwt.tokens import RefreshToken, OutstandingToken, BlacklistedToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from mother.models import Mother
 from next_of_kin.models import NextOfKin
 from django.shortcuts import get_object_or_404
 from hospital.models import Hospital
 from community_health_promoter.models import CHP
 from django.core.mail import send_mail
-from .utilis import send_invitation_email
+from django.conf import settings 
 from django.contrib.auth.models import User
 from questions.models import EPDSQuestion
 import pandas as pd
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import get_user_model
+import logging
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from screeningtestscore.models import ScreeningTestScore
 from django.utils.dateparse import parse_date
-import logging
 from users.models import User
 from .serializers import UserSerializer
 from django.contrib.auth import authenticate
@@ -35,7 +39,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from answers.models import Answer
-
+from community_health_promoter.utils import send_invitation_email
 from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.response import Response
@@ -49,6 +53,7 @@ from .serializers import ScreeningTestScoreSerializer
 from django.http import Http404
 from careguide.models import Careguide
 from .serializers import CareguideSerializer
+from community_health_promoter.utils import send_invitation_email
 
 class CareguideListCreateView(generics.ListCreateAPIView):
     queryset = Careguide.objects.all()
@@ -201,9 +206,6 @@ class MotherDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-
-
-
 class NextOfKinListView(APIView):
     """API View for getting a list of nextofkins"""
     def get(self, request):
@@ -317,11 +319,6 @@ class ChpDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-#nurse admin
-
-logger = logging.getLogger(__name__)
-
 class NurseAdminListView(APIView):
     """
     View to list all nurse admins or retrieve by ID, or search nurse admins by name.
@@ -372,50 +369,75 @@ class NurseAdminDetailView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class InviteCHPTestView(APIView):
-    """
-    View to send an email invitation to a CHP based on their email.
-    """
-    def get(self, request):
-        email = request.GET.get('email')
-        if not email:
-            return Response({"detail": "Email not provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user = User.objects.filter(email=email).first()
+
+
+logger = logging.getLogger(__name__)
+
+class InviteCHPDetailView(APIView):
+    """
+    View to send an email invitation to a CHP based on their user ID and email.
+    """
+    def post(self, request):
+        logger.info("Received request to send invitation email.")
+        
+        serializer = InviteCHPSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            logger.warning("Invalid data: %s", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id = serializer.validated_data['user_id']
+        email = serializer.validated_data['email']
+        
+        logger.info("Looking up user with ID: %s", user_id)
+        User = get_user_model()
+        user = User.objects.filter(id=user_id).first()
+
         if not user:
-            return Response({"detail": "User with this email does not exist."}, status=status.HTTP_404_NOT_FOUND)
+            logger.error("User with ID %s does not exist.", user_id)
+            return Response({"detail": "User with this ID does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
+        if user.email != email:
+            logger.error("Email %s does not match the user with ID %s.", email, user_id)
+            return Response({"detail": "Email does not match the user."}, status=status.HTTP_400_BAD_REQUEST)
 
-        chp_instance = CHP.objects.filter(user_id=user.id).first()
+        chp_instance = CHP.objects.filter(user=user).first()
         if not chp_instance:
+            logger.error("CHP instance for user %s does not exist.", email)
             return Response({"detail": "CHP with this user does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
-        send_invitation_email(email)
+        logger.info("Sending invitation email to: %s", email)
 
-        serializer = CHPSerializer(chp_instance)
-        return Response({
-            "message": "Invitation sent successfully.",
-            "CHP_details": serializer.data
-        }, status=status.HTTP_200_OK)
+        try:
+            send_invitation_email(email)
+            logger.info("Invitation email sent to %s.", email)
+            return Response({
+                "message": "Invitation sent successfully.",
+                "CHP_details": CHPSerializer(chp_instance).data  
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error("Failed to send invitation email to %s. Error: %s", email, str(e))
+            return Response({
+                "detail": "Failed to send invitation email. Please try again later."
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @csrf_exempt
 @api_view(['GET', 'POST'])
 @parser_classes([MultiPartParser])
+
 def questions(request, question_id=None):
     if request.method == 'POST':
         if 'file' not in request.FILES:
             return Response({"error": "File not found."}, status=status.HTTP_400_BAD_REQUEST)
         file = request.FILES['file']
         try:
-            # Read the CSV file using pandas
             data_df = pd.read_csv(file)
-            # Ensure required columns are present
             required_columns = ['question', 'option_1', 'first_score', 'option_2', 'second_score', 'option_3', 'third_score', 'option_4', 'forth_score']
             for column in required_columns:
                 if column not in data_df.columns:
                     return Response({"error": f"Missing column: {column}"}, status=status.HTTP_400_BAD_REQUEST)
-            # Iterate over the rows and save them to the database
             for _, row in data_df.iterrows():
                 EPDSQuestion.objects.create(
                     question=row.get('question'),
@@ -465,7 +487,6 @@ class ScreeningTestScoreListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # Initialize the serializer with request data
         serializer = ScreeningTestScoreSerializer(data=request.data)
         
         if serializer.is_valid():
@@ -507,7 +528,6 @@ class ScreeningTestScoreDetailView(APIView):
         serializer = ScreeningTestScoreSerializer(screening_test, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            # Return a success message along with the updated data
             return Response({
                 "message": "Screening test score updated successfully",
                 "data": serializer.data
@@ -517,7 +537,8 @@ class ScreeningTestScoreDetailView(APIView):
 
 
 class AnswerListCreateView(APIView):
-   def get(self, request):
+   def get(self, request):           
+
        name = request.query_params.get('name', None)
        if name:
            answers = Answer.objects.filter(question__icontains=name)
@@ -549,7 +570,7 @@ class AnswerDetailView(APIView):
         return Response(serializer.data)
 
 class UserListView(APIView):
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [AllowAny]  
 
     def post(self, request):
         """
@@ -611,19 +632,31 @@ class UserDetailView(APIView):
     
     
 class RegisterView(APIView):
-    # Method to handle POST requests for user registration
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save() 
+            refresh = RefreshToken.for_user(user)
+            response = Response({
+                'message': 'Registration successful',
+            }, status=status.HTTP_201_CREATED)
+            response.set_cookie(
+                key='access_token',  
+                value=str(refresh.access_token),
+                httponly=True,
+                secure=True,  
+                samesite='Lax', )
+            return response 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class YourProtectedView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, *args, **kwargs):
-        # Your view logic here
         return Response({"message": "You have access to this view!"})
+
+
 
 
 class LoginView(APIView):
@@ -635,17 +668,19 @@ class LoginView(APIView):
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            # Generate tokens
-            refresh = RefreshToken.for_user(user)
+            # User is authenticated, return user info
             return Response({
-                'success': 'Successfully logged in.',
-                'access': str(refresh.access_token),
-                'refresh': str(refresh),
+                'message': 'Login successful',
+                'userId': user.id,
+                'role': user.role 
             }, status=status.HTTP_200_OK)
         else:
             return Response({
                 'error': 'Invalid credentials.'
             }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 
 class CreateAdminUser(APIView):
     permission_classes = [AllowAny]
@@ -661,15 +696,7 @@ class CreateAdminUser(APIView):
         return Response({"detail": "Superuser already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@csrf_exempt
-def generate_token(request):
-    user,created =User.objects.get_or_create(username='dummyuser')
-    refresh = RefreshToken.for_user(user)
-    return JsonResponse({
-        'access':str(refresh.access_token),
-        'refresh':str(refresh)
-    })
-    
+
     
     
 class UserSearchView(APIView):
@@ -690,43 +717,24 @@ class LogoutView(APIView):
             refresh_token = request.data.get('refresh')
             if refresh_token:
                 token = RefreshToken(refresh_token)
-                token.blacklist()  # Blacklist the token to prevent reuse
+                token.blacklist()  
             return Response({'success': 'Successfully logged out.'}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
 
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        # Create a token but do not include it in the response
-        token = super().get_token(user)
-        return token
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
 
-    def post(self, request, *args, **kwargs):
-        # Call the super method to get the default response
-        response = super().post(request, *args, **kwargs)
-        
-        # Customize the response to only include the success message
-        if response.status_code == status.HTTP_200_OK:
-            return Response({"message": "Successfully logged in"}, status=status.HTTP_200_OK)
-        
-        return response
     
     
 roles = ["Admin", "Nurse", "CHP"]
 
 class UserRoleListCreateView(APIView):
     
-    # GET request to retrieve the list of roles
     def get(self, request):
         return Response({"roles": roles}, status=status.HTTP_200_OK)
 
-    # POST request to add a new role
     def post(self, request):
         new_role = request.data.get('role')
         if new_role:
@@ -802,41 +810,39 @@ class CareguideDetailView(APIView):
     """
     API View for retrieving, updating, and soft-deleting a specific careguide.
     """
-
-    def get_object(self, pk):
+    def get(self, request, id):
+        
         """
-        Helper method to get a careguide object by primary key.
+        Retrieve a careguide resource by ID.
         """
         try:
-            return Careguide.objects.get(pk=pk)
+            careguide = Careguide.objects.get(id=id)
         except Careguide.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        """
-        Retrieve a specific careguide by its primary key.
-        """
-        careguide = self.get_object(pk)
+            logger.error('resource with ID %d not found.', id)
+            return Response({"detail": "resource not found."}, status=status.HTTP_404_NOT_FOUND)
         serializer = CareguideSerializer(careguide)
+        logger.info('User with ID %d retrieved successfully.', id)
         return Response(serializer.data)
 
-    def patch(self, request, pk):
+    def patch(self, request, id):
         """
         Partially update a specific careguide.
         """
-        careguide = self.get_object(pk)
+        careguide = self.get_object(id)
         serializer = CareguideSerializer(careguide, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
+    def delete(self, request, id):
         """
         Soft-delete a specific careguide by marking it inactive instead of deleting it from the database.
         """
-        careguide = self.get_object(pk)
+        careguide = self.get_object(id)
         careguide.is_active = False
         careguide.save()
         return Response({"message": "Article deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+
+    
         

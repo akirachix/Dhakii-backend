@@ -24,6 +24,7 @@ class CHPModelTest(TestCase):
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",
+
         )
 
     def test_chp_creation(self):
