@@ -629,27 +629,22 @@ class UserDetailView(APIView):
         else:
             logger.error('User update failed for ID %d: %s', id, serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    
+
+
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
             user = serializer.save() 
-            refresh = RefreshToken.for_user(user)
-            response = Response({
+            return Response({
                 'message': 'Registration successful',
+                'user': serializer.data, 
             }, status=status.HTTP_201_CREATED)
-            response.set_cookie(
-                key='access_token',  
-                value=str(refresh.access_token),
-                httponly=True,
-                secure=True,  
-                samesite='Lax', )
-            return response 
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 class YourProtectedView(APIView):
     permission_classes = [IsAuthenticated]
