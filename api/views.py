@@ -56,28 +56,6 @@ from .serializers import CareguideSerializer
 from community_health_promoter.utils import send_invitation_email
 
 
-class ScrapeCareguideView(APIView):
-    def post(self, request):
-        url = request.data.get('url')
-        if not url:
-            return Response({"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-
-            article_data = scrape_article(url)
-            if article_data:
-                careguide = Careguide.objects.create(
-                    title=article_data.get('Title', ''),
-                    content=article_data.get('Content', ''),
-                    author=article_data.get('Author', ''),
-                )
-                serializer = CareguideSerializer(careguide)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"error": "Failed to scrape article"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
 class NurseListView(APIView):
     """API View for getting a list of nurses"""
