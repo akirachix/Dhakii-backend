@@ -118,7 +118,7 @@ def test_user_without_permissions_fails(self):
         username="invalidpermissionsuser",
         password="password123",
     )
-    user.save()  # Save the user instance to the database
-    user.user_permissions.clear()  # Clear any permissions, or assign invalid ones if needed
+    user.save()  
+    user.user_permissions.clear()  
     with self.assertRaises(ValidationError):
-        user.full_clean()  # This should raise a ValidationError
+        user.full_clean()  
