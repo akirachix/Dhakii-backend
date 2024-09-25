@@ -11,7 +11,6 @@ from .views import LogoutView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
-
 from api.views import InviteCHPDetailView
 from .views import CareguideListView, CareguideDetailView
 
