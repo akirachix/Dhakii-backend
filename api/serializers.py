@@ -36,8 +36,6 @@ class NurseAdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
-
 class MotherSerializer(serializers.ModelSerializer):
     """This serializer for the Mother model, including all fields."""
 
@@ -59,8 +57,6 @@ class MinimalMotherSerializer(serializers.ModelSerializer):
         This function the full names of the mother.
         """
         return f"{object.first_name} {object.last_name}"
-
-
 
 
 class NextOfKinSerializer(serializers.ModelSerializer):
@@ -111,9 +107,6 @@ class InviteCHPSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value
-
-
-    
     
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -143,13 +136,27 @@ class ScreeningTestScoreSerializer(serializers.ModelSerializer):
         model = ScreeningTestScore
         fields = '__all__'
         
-        
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     
     class Meta:
         model = User
-        fields = ['email', 'username', 'first_name', 'last_name', 'password','phone_number','user_role']
+        fields = ['email', 'username', 'first_name', 'last_name', 'password', 'phone_number', 'user_role']
+
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            phone_number=validated_data.get('phone_number', ''),
+            user_role=validated_data.get('user_role', '')
+        )
+        # Hash the password
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
 
