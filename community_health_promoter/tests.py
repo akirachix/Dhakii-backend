@@ -1,12 +1,8 @@
 from django.test import TestCase
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from community_health_promoter.models import (
-    CHP,
-)
+from community_health_promoter.models import CHP
 from django.core.exceptions import ValidationError
-from django.utils import timezone
-
 
 class CHPModelTest(TestCase):
     def setUp(self):
@@ -20,17 +16,14 @@ class CHPModelTest(TestCase):
             user=self.user,  # Pass the entire user object here, NOT the ID
             registered_date=timezone.now().date(),
             reg_no="CHP123",
-            phone_number="1234567890",
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",
-
         )
 
     def test_chp_creation(self):
         # Test if the CHP instance was created successfully
         self.assertEqual(self.chp.reg_no, "CHP123")
-        self.assertEqual(self.chp.phone_number, "1234567890")
         self.assertEqual(self.chp.location, "Test Location")
         self.assertEqual(self.chp.sub_location, "Test Sub-location")
         self.assertEqual(self.chp.village, "Test Village")
@@ -40,12 +33,12 @@ class CHPModelTest(TestCase):
         expected_str = f"{self.chp.reg_no} - {self.chp.user.username}"  # Use the username from the related user
         self.assertEqual(str(self.chp), expected_str)
 
-    class CHPModelUnhappyPathTest(TestCase):
-        def setUp(self):
-            # Create a valid User instance for testing
-            self.user = get_user_model().objects.create_user(
-                username="chpuser", email="chpuser@example.com", password="password123"
-            )
+class CHPModelUnhappyPathTest(TestCase):
+    def setUp(self):
+        # Create a valid User instance for testing
+        self.user = get_user_model().objects.create_user(
+            username="chpuser", email="chpuser@example.com", password="password123"
+        )
 
     def test_missing_required_fields(self):
         """
@@ -55,7 +48,6 @@ class CHPModelTest(TestCase):
         chp = CHP(
             user=self.user,
             registered_date=timezone.now().date(),
-            phone_number="1234567890",
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",
@@ -71,29 +63,12 @@ class CHPModelTest(TestCase):
             user=self.user,
             registered_date=timezone.now().date(),
             reg_no="C" * 256,  # Exceeds the max_length of 255
-            phone_number="1234567890",
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",
         )
         with self.assertRaises(ValidationError):
             chp.full_clean()  # This should raise a ValidationError due to exceeded max_length
-
-    def test_invalid_phone_number_length(self):
-        """
-        Test invalid phone number that doesn't meet the expected length constraint.
-        """
-        chp = CHP(
-            user=self.user,
-            registered_date=timezone.now().date(),
-            reg_no="CHP123",
-            phone_number="123",  # Too short, should be 10 digits
-            location="Test Location",
-            sub_location="Test Sub-location",
-            village="Test Village",
-        )
-        with self.assertRaises(ValidationError):
-            chp.full_clean()  # This should raise a ValidationError due to invalid phone number length
 
     def test_invalid_user_relationship(self):
         """
@@ -103,7 +78,6 @@ class CHPModelTest(TestCase):
             user=None,  # User is missing
             registered_date=timezone.now().date(),
             reg_no="CHP123",
-            phone_number="1234567890",
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",

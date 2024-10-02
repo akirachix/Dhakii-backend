@@ -33,7 +33,6 @@ class AnswerModelTest(TestCase):
             user=self.user,
             registered_date="2023-01-01",
             reg_no="CHP123",
-            phone_number="1234567890",
             location="Location1",
             sub_location="SubLocation1",
             village="Village1",

@@ -86,7 +86,7 @@ class MinimalNextOfKinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NextOfKin
-        fields = ['id', 'first_name', 'last_name', 'full_name']  
+        fields = '__all__'  
 
 
 class CHPSerializer(serializers.ModelSerializer):
@@ -101,7 +101,7 @@ class MinimalCHPSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CHP
-        fields = ['user_id', 'reg_no','sub_location']
+        fields = '__all__'
 
 
 class InviteCHPSerializer(serializers.Serializer):
@@ -128,7 +128,7 @@ class MinimalHospitalSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Hospital
-        fields = ['id', 'name',]
+        fields = '__all__'
 
 
 
@@ -149,7 +149,22 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['email', 'username', 'first_name', 'last_name', 'password','phone_number','user_role']
+        fields = '__all__'
+
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            phone_number=validated_data.get('phone_number', ''),
+            user_role=validated_data.get('user_role', '')
+        )
+        # Hash the password
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
 
 
 
@@ -157,7 +172,7 @@ class AnswerSerializer(serializers.ModelSerializer):
     question = serializers.PrimaryKeyRelatedField(queryset=EPDSQuestion.objects.all())
     class Meta:
         model = Answer
-        fields = ['id', 'question', 'test', 'score']
+        fields = '__all__'
 
 
 #caregude

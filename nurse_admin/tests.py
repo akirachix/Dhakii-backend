@@ -24,7 +24,6 @@ class NurseAdminModelTest(TestCase):
         self.nurse_admin = NurseAdmin.objects.create(
             user=self.user,
             hospital_id=self.hospital,
-            tel_no="+254712345678",
             location="Test Location",
             sub_location="Test Sub-location",
         )
@@ -33,7 +32,7 @@ class NurseAdminModelTest(TestCase):
         # Test if the NurseAdmin instance was created successfully (happy path)
         self.assertEqual(self.nurse_admin.user, self.user)
         self.assertEqual(self.nurse_admin.hospital_id, self.hospital)
-        self.assertEqual(self.nurse_admin.tel_no, "+254712345678")
+        
 
     def test_missing_required_fields(self):
         """
@@ -45,9 +44,7 @@ class NurseAdminModelTest(TestCase):
             location="Test Location",
             sub_location="Test Sub-location",
         )
-        # `tel_no` is missing, so validation should fail
-        with self.assertRaises(ValidationError):
-            nurse_admin.full_clean()  # This triggers model validation
+        
 
     def test_invalid_phone_number_format(self):
         """
@@ -56,13 +53,10 @@ class NurseAdminModelTest(TestCase):
         nurse_admin = NurseAdmin(
             user=self.user,
             hospital_id=self.hospital,
-            tel_no="invalid_phone",  # Invalid phone number format
             location="Test Location",
             sub_location="Test Sub-location",
         )
-        # Phone number is invalid, so validation should fail
-        with self.assertRaises(ValidationError):
-            nurse_admin.full_clean()  # This triggers model validation
+       
 
     def test_missing_user(self):
         """
@@ -71,7 +65,6 @@ class NurseAdminModelTest(TestCase):
         nurse_admin = NurseAdmin(
             user=None,  # Missing user
             hospital_id=self.hospital,
-            tel_no="+254712345678",
             location="Test Location",
             sub_location="Test Sub-location",
         )
@@ -86,7 +79,6 @@ class NurseAdminModelTest(TestCase):
         nurse_admin = NurseAdmin(
             user=self.user,
             hospital_id=None,  # Missing hospital
-            tel_no="+254712345678",
             location="Test Location",
             sub_location="Test Sub-location",
         )

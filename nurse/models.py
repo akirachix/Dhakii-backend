@@ -9,12 +9,6 @@ class Nurse(models.Model):
     """
     Nurse Model - Stores information about nurses.
     """
-
-    phone_number_validator = RegexValidator(
-        regex=r"^\+?\d{10,15}$",
-        message="Phone number must be between 10 and 15 digits and start with '+' if international.",
-    )
-
     GENDER_CHOICES = [
         ("Male", "Male"),
         ("Female", "Female"),
@@ -24,10 +18,9 @@ class Nurse(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
-    tel_no = models.CharField(
-        max_length=15, validators=[phone_number_validator]
-    )  # Added phone number validator
     reg_no = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     sub_location = models.CharField(max_length=255)
 
     def __str__(self):

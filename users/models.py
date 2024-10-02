@@ -6,6 +6,14 @@ from django.contrib.auth.models import (
 )
 from datetime import datetime
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+
+
+# Define your validator outside the User class
+phone_number_validator = RegexValidator(
+    regex=r"^\+?\d{10,15}$",
+    message="Phone number must be between 10 and 15 digits and start with '+' if international.",
+)
 
 
 class MyUserManager(BaseUserManager):
@@ -32,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, validators=[phone_number_validator])
 
     USER_ROLES = [
         ("admin", "NurseAdmin"),
@@ -61,3 +69,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
+
+
+
+
+
+
+
