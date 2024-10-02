@@ -1,16 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import User
-from hospital.models import Hospital
 from django.conf import settings
-from django.core.validators import RegexValidator
+from hospital.models import Hospital
 
 
 class NurseAdmin(models.Model):
-    """
-    NurseAdmin Model - Stores information about nurse administrators.
-    """
-
-    admin_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

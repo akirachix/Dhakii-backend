@@ -149,9 +149,6 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-<<<<<<< Updated upstream
-        fields = ['email', 'username', 'first_name', 'last_name', 'password','phone_number','user_role']
-=======
         fields = '__all__'
 
     def create(self, validated_data):
@@ -167,7 +164,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
->>>>>>> Stashed changes
+
 
 
 

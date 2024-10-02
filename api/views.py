@@ -251,7 +251,7 @@ class NextOfKinDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-<<<<<<< Updated upstream
+
         
 class HospitalDetailView(APIView):
     """This APIView is to show the detailed information about the hospital"""
@@ -272,8 +272,6 @@ class HospitalDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-=======
->>>>>>> Stashed changes
 class CHPListView(APIView):
     """API View for getting a list of CHPs"""
     
@@ -492,29 +490,22 @@ class ScreeningTestScoreListView(APIView):
             screening_tests = ScreeningTestScore.objects.all()
         serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
     def post(self, request):
         serializer = ScreeningTestScoreSerializer(data=request.data)
-        
         if serializer.is_valid():
             test_date = request.data.get('test_date', None)
-            
             if test_date:
                 test_date_obj = serializer.validated_data.get('test_date')
                 screening_tests = ScreeningTestScore.objects.filter(test_date=test_date_obj)
             else:
                 screening_tests = ScreeningTestScore.objects.all()
-            
             result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
             return Response({
                 "message": "Screening test score updated successfully",
                 "data": serializer.data
             }, status=status.HTTP_200_OK)
-
-
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
 
 
 class ScreeningTestScoreDetailView(APIView):
@@ -525,13 +516,11 @@ class ScreeningTestScoreDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except ScreeningTestScore.DoesNotExist:
             return Response({"error": "Screening test score not found"}, status=status.HTTP_404_NOT_FOUND)
-
     def put(self, request, pk):
         try:
             screening_test = ScreeningTestScore.objects.get(pk=pk)
         except ScreeningTestScore.DoesNotExist:
             return Response({"error": "Screening test score not found"}, status=status.HTTP_404_NOT_FOUND)
-
         serializer = ScreeningTestScoreSerializer(screening_test, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -539,8 +528,8 @@ class ScreeningTestScoreDetailView(APIView):
                 "message": "Screening test score updated successfully",
                 "data": serializer.data
             }, status=status.HTTP_200_OK)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class AnswerListCreateView(APIView):

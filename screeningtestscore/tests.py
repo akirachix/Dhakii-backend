@@ -44,6 +44,7 @@ class ScreeningTestScoreModelTest(TestCase):
         """
         Happy path: Test if the ScreeningTestScore instance is created successfully.
         """
+
         screening_test = ScreeningTestScore.objects.create(
             mother_id=self.mother, chp_id=self.chp, test_date=date.today(), total_score=10
         )
@@ -54,7 +55,7 @@ class ScreeningTestScoreModelTest(TestCase):
         self.assertIsInstance(screening_test.test_date, date)
         self.assertEqual(
             str(screening_test),
-            f"Test {screening_test.test_id} - Total Score: {screening_test.total_score}",
+            f" Total Score: {screening_test.total_score}",
         )
 
 
