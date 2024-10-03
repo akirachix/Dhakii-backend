@@ -25,7 +25,6 @@ class HospitalModelTest(TestCase):
             user=self.user,  # Pass the created user here
             registered_date="2023-01-01",
             reg_no="CHP001",
-            phone_number="1234567890",
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",

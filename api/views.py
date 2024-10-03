@@ -248,25 +248,24 @@ class NextOfKinDetailView(APIView):
 
 
 class CHPListView(APIView):
-       """API View for getting a list of CHPs"""
-       def get(self, request):
+    """API View for getting a list of CHPs"""
+    
+    def get(self, request):
         chps = self.get_queryset()
         serializer = CHPSerializer(chps, many=True)
         return Response(serializer.data)
         
-       """You can get a CHP by filtering their sub_location"""
-       
-       def get_queryset(self):
+    """You can get a CHP by filtering their sub_location"""
+    
+    def get_queryset(self):
         queryset = CHP.objects.all()
         sub_location = self.request.query_params.get('sublocation', None)
         if sub_location:
             queryset = queryset.filter(sub_location__icontains=sub_location)
         return queryset
 
-
-
-       def post(self, request):
-        """This is for adding a chp to the list of chp"""
+    def post(self, request):
+        """This is for adding a CHP to the list of CHPs"""
         serializer = CHPSerializer(data=request.data)
         
         if serializer.is_valid():
@@ -277,23 +276,28 @@ class CHPListView(APIView):
         
 
 class ChpDetailView(APIView):
-    """This APIView is to show the detailed information about the chp"""
+    """This APIView is to show the detailed information about the CHP"""
 
     def get(self, request, id):
-        chps = CHP.objects.get(id=id)
-        serializer = CHPSerializer(chps)
-        return Response(serializer.data)
-
+        try:
+            chp = CHP.objects.get(id=id)
+            serializer = CHPSerializer(chp)
+            return Response(serializer.data)
+        except CHP.DoesNotExist:
+            return Response({"error": "CHP not found."}, status=status.HTTP_404_NOT_FOUND)
 
     def patch(self, request, id):
         """This is for updating a specific CHP by using their unique id"""
-        chps = CHP.objects.get(id=id)
-        serializer = CHPSerializer(chps, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            chp = CHP.objects.get(id=id)
+            serializer = CHPSerializer(chp, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except CHP.DoesNotExist:
+            return Response({"error": "CHP not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class NurseAdminListView(APIView):
     """
@@ -476,17 +480,10 @@ class ScreeningTestScoreListView(APIView):
         if serializer.is_valid():
             test_date = request.data.get('test_date', None)
             
-
-
-        
-      
-
             if test_date:
                 screening_tests = ScreeningTestScore.objects.filter(test_date=test_date)
             else:
                 screening_tests = ScreeningTestScore.objects.all()
-
-
             result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
 
             
