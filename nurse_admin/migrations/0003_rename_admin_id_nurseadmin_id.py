@@ -7,12 +7,12 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('nurse_admin', '0001_initial'),
+        ('nurse_admin', '0001_initial'),
     ]
 
     operations = [
-<<<<<<< Updated upstream
-       
-=======
-      
->>>>>>> Stashed changes
+        
     ]
+
+
+
