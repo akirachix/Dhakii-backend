@@ -245,6 +245,25 @@ class NextOfKinDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+class HospitalDetailView(APIView):
+    """This APIView is to show the detailed information about the hospital"""
+
+    def get(self, request, id):
+        """This is for getting a specific hospital by using their unique id"""
+        hospitals = Hospital.objects.get(id=id)
+        serializer = HospitalSerializer(hospitals)
+        return Response(serializer.data)
+
+    def patch(self, request, id):
+        """This is for updating a specific hospital by using their unique id"""
+        hospital = Hospital.objects.get(id=id)
+        serializer = HospitalSerializer(hospital, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CHPListView(APIView):
