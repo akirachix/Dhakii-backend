@@ -11,7 +11,7 @@ from .views import LogoutView
 from .views import UserRoleListCreateView
 from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
-# from .views import ScrapeCareguideView
+
 from api.views import InviteCHPDetailView
 from .views import CareguideListView, CareguideDetailView
 
@@ -54,7 +54,6 @@ urlpatterns = [
     path('nextofkins/<int:id>/', NextOfKinDetailView.as_view(),name='nextofkin_detail_view'),
     path('nextofkins/search/', NextOfKinListView.as_view(), name='nextofkin-search'),
 
-    # path('scrape_careguide/', ScrapeCareguideView.as_view(), name='scrape-careguide'),
 
     path('answers/', AnswerListCreateView.as_view(), name='answer_list_create'),
     path('answers/<int:pk>/', AnswerDetailView.as_view(), name='answer_detail'),
