@@ -55,31 +55,6 @@ from careguide.models import Careguide
 from .serializers import CareguideSerializer
 from community_health_promoter.utils import send_invitation_email
 
-class CareguideListCreateView(generics.ListCreateAPIView):
-    queryset = Careguide.objects.all()
-    serializer_class = CareguideSerializer
-
-class ScrapeCareguideView(APIView):
-    def post(self, request):
-        url = request.data.get('url')
-        if not url:
-            return Response({"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-
-            article_data = scrape_article(url)
-            if article_data:
-                careguide = Careguide.objects.create(
-                    title=article_data.get('Title', ''),
-                    content=article_data.get('Content', ''),
-                    author=article_data.get('Author', ''),
-                )
-                serializer = CareguideSerializer(careguide)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"error": "Failed to scrape article"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 class NurseListView(APIView):
@@ -110,7 +85,7 @@ class NurseListView(APIView):
 class NurseDetailView(APIView):
     """This APIView is to show the detailed information about the nurse"""
     def get(self, request, pk):
-        """This is for getting a specific nurse by using their unique id"""
+        """This iRan existing unit tests to verify that no new bugs were introduced.s for getting a specific nurse by using their unique id"""
         nurses = Nurse.objects.get(pk=pk)
         serializer = NurseSerializer(nurses)
         return Response(serializer.data)
@@ -135,10 +110,12 @@ class NurseDetailView(APIView):
 class MotherListView(APIView):
     """API View for getting a list of mothers"""
     def get(self, request):
-        """You can get a mothers by filtering their first_name"""
         mothers = self.get_queryset()
         serializer = MotherSerializer(mothers, many=True)
         return Response(serializer.data)
+
+        """You can get a mothers by filtering their first_name"""
+
     def get_queryset(self):
         queryset = Mother.objects.all()
         first_name = self.request.query_params.get('first_name',None)
@@ -152,6 +129,25 @@ class MotherListView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MotherDetailView(APIView):
+    """This APIView is to show the detailed information about the mother"""
+
+    def get(self, request, id):
+        """This is for getting a specific mother by using their unique id"""
+        mother = Mother.objects.get(id=id)
+        serializer = MotherSerializer(mother)
+        return Response(serializer.data)
+
+    def patch(self, request, id):
+        """This is for updating a specific mother by using their unique id"""
+        mother = Mother.objects.get(id=id)
+        serializer = MotherSerializer(mother, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -186,25 +182,24 @@ class HospitalListView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class MotherDetailView(APIView):
-    """This APIView is to show the detailed information about the mother"""
+class HospitalDetailView(APIView):
+    """This APIView is to show the detailed information about the hospital"""
 
     def get(self, request, id):
-        """This is for getting a specific mother by using their unique id"""
-        mother = Mother.objects.get(id=id)
-        serializer = MotherSerializer(mother)
+        """This is for getting a specific hospital by using their unique id"""
+        hospitals = Hospital.objects.get(id=id)
+        serializer = HospitalSerializer(hospitals)
         return Response(serializer.data)
 
     def patch(self, request, id):
-        """This is for updating a specific mother by using their unique id"""
-        mother = Mother.objects.get(id=id)
-        serializer = MotherSerializer(mother, data=request.data)
+        """This is for updating a specific hospital by using their unique id"""
+        hospital = Hospital.objects.get(id=id)
+        serializer = HospitalSerializer(hospital, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class NextOfKinListView(APIView):
     """API View for getting a list of nextofkins"""
@@ -251,25 +246,6 @@ class NextOfKinDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        
-class HospitalDetailView(APIView):
-    """This APIView is to show the detailed information about the hospital"""
-
-    def get(self, request, id):
-        """This is for getting a specific hospital by using their unique id"""
-        hospitals = Hospital.objects.get(id=id)
-        serializer = HospitalSerializer(hospitals)
-        return Response(serializer.data)
-
-    def patch(self, request, id):
-        """This is for updating a specific hospital by using their unique id"""
-        hospital = Hospital.objects.get(id=id)
-        serializer = HospitalSerializer(hospital, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CHPListView(APIView):
        """API View for getting a list of CHPs"""
@@ -348,6 +324,13 @@ class NurseAdminListView(APIView):
     
 
 class NurseAdminDetailView(APIView):
+
+    def get(self, request, id):
+        """This is for getting a specific nurse admin by using their unique id"""
+        nurseAdmin = NurseAdmin.objects.get(id=id)
+        serializer = NurseAdminSerializer(nurseAdmin)
+        return Response(serializer.data)
+
     """
     View to update a specific nurse admin by ID.
     """
@@ -487,20 +470,38 @@ class ScreeningTestScoreListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        """Add a new screening test score or retrieve existing ones based on the test date."""
         serializer = ScreeningTestScoreSerializer(data=request.data)
+<<<<<<< Updated upstream
         
         if serializer.is_valid():
             test_date = request.data.get('test_date', None)
             
+=======
+
+        
+        if serializer.is_valid():
+           
+            test_date = request.data.get('test_date', None)
+
+>>>>>>> Stashed changes
             if test_date:
-                test_date_obj = serializer.validated_data.get('test_date')
-                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date_obj)
+                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date)
             else:
                 screening_tests = ScreeningTestScore.objects.all()
+<<<<<<< Updated upstream
             
+=======
+
+>>>>>>> Stashed changes
             result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
+
+            
+            serializer.save()
+
             return Response({
                 "message": "Screening test score updated successfully",
+<<<<<<< Updated upstream
                 "data": serializer.data
             }, status=status.HTTP_200_OK)
 
@@ -508,9 +509,18 @@ class ScreeningTestScoreListView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
+=======
+                "data": result_serializer.data 
+            }, status=status.HTTP_201_CREATED)
+
+       
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+>>>>>>> Stashed changes
 
 
 class ScreeningTestScoreDetailView(APIView):
+
     def get(self, request, pk):
         try:
             screening_test = ScreeningTestScore.objects.get(pk=pk)
@@ -594,6 +604,7 @@ class UserListView(APIView):
         logger.info("Retrieved user list.")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class UserDetailView(APIView):
     """
     Handle User detail retrieval, update, and deletion.
@@ -652,28 +663,25 @@ class YourProtectedView(APIView):
         return Response({"message": "You have access to this view!"})
 
 
-
-
 class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
 
-        # Authenticate user
-        user = authenticate(request, email=email, password=password)
+        # Authenticate user using email instead of username
+        user = authenticate(request, username=email, password=password)
 
         if user is not None:
             # User is authenticated, return user info
             return Response({
                 'message': 'Login successful',
                 'userId': user.id,
-                'role': user.role 
+                'role': user.user_role 
             }, status=status.HTTP_200_OK)
         else:
             return Response({
                 'error': 'Invalid credentials.'
             }, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 
@@ -702,7 +710,6 @@ class UserSearchView(APIView):
             serializer = UserSerializer(users, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"error": "first_name parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -819,22 +826,33 @@ class CareguideDetailView(APIView):
         logger.info('User with ID %d retrieved successfully.', id)
         return Response(serializer.data)
 
+    
+
     def patch(self, request, id):
         """
-        Partially update a specific careguide.
+        Update a resource by ID.
         """
-        careguide = self.get_object(id)
-        serializer = CareguideSerializer(careguide, data=request.data, partial=True)
+        try:
+            resource = Careguide.objects.get(id=id)
+        except Careguide.DoesNotExist:
+            logger.error('Resource with ID %d not found for update.', id)
+            return Response({"detail": "resource not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = CareguideSerializer(resource, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            logger.info('Resource with ID %d updated successfully.', id)
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            logger.error('Resource update failed for ID %d: %s', id, serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
 
     def delete(self, request, id):
         """
         Soft-delete a specific careguide by marking it inactive instead of deleting it from the database.
         """
-        careguide = self.get_object(id)
+        careguide = Careguide.objects.get(id=id)
         careguide.is_active = False
         careguide.save()
         return Response({"message": "Article deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
