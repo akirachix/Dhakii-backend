@@ -470,21 +470,38 @@ class ScreeningTestScoreListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        """This is for adding screening test"""
+        """Add a new screening test score or retrieve existing ones based on the test date."""
         serializer = ScreeningTestScoreSerializer(data=request.data)
+<<<<<<< Updated upstream
         
         if serializer.is_valid():
             test_date = request.data.get('test_date', None)
             
+=======
+
+        
+        if serializer.is_valid():
+           
+            test_date = request.data.get('test_date', None)
+
+>>>>>>> Stashed changes
             if test_date:
-                test_date_obj = serializer.validated_data.get('test_date')
-                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date_obj)
+                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date)
             else:
                 screening_tests = ScreeningTestScore.objects.all()
+<<<<<<< Updated upstream
             
+=======
+
+>>>>>>> Stashed changes
             result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
+
+            
+            serializer.save()
+
             return Response({
                 "message": "Screening test score updated successfully",
+<<<<<<< Updated upstream
                 "data": serializer.data
             }, status=status.HTTP_200_OK)
 
@@ -492,6 +509,14 @@ class ScreeningTestScoreListView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             
+=======
+                "data": result_serializer.data 
+            }, status=status.HTTP_201_CREATED)
+
+       
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+>>>>>>> Stashed changes
 
 
 class ScreeningTestScoreDetailView(APIView):
