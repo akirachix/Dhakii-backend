@@ -11,7 +11,7 @@ class ScreeningTestScore(models.Model):
     total_score = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return f"Test {self.test_id} - Total Score: {self.total_score}"
+        return f" Total Score: {self.total_score}"
 
     def clean(self):
         # Only perform the check if test_date is not None

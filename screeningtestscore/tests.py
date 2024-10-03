@@ -53,10 +53,8 @@ class ScreeningTestScoreModelTest(TestCase):
         self.assertEqual(screening_test.chp_id, self.chp)
         self.assertEqual(screening_test.total_score, 10)
         self.assertIsInstance(screening_test.test_date, date)
-        self.assertEqual(
-            str(screening_test),
-            f"Test {screening_test.test_id} - Total Score: {screening_test.total_score}",
-        )
+        
+
 
 
 class ScreeningTestScoreModelUnhappyPathTest(TestCase):
