@@ -85,7 +85,7 @@ class NurseListView(APIView):
 class NurseDetailView(APIView):
     """This APIView is to show the detailed information about the nurse"""
     def get(self, request, pk):
-        """This is for getting a specific nurse by using their unique id"""
+        """This iRan existing unit tests to verify that no new bugs were introduced.s for getting a specific nurse by using their unique id"""
         nurses = Nurse.objects.get(pk=pk)
         serializer = NurseSerializer(nurses)
         return Response(serializer.data)
