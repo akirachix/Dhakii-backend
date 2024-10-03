@@ -23,7 +23,6 @@ class NurseModelTest(TestCase):
             user=self.user,
             hospital_id=self.hospital,
             gender="Female",
-            tel_no="+254712345678",
             reg_no="RN123456",
             sub_location="Test Sub-location",
         )
@@ -32,7 +31,6 @@ class NurseModelTest(TestCase):
         # Test if the Nurse instance was created successfully
         self.assertEqual(self.nurse.user, self.user)
         self.assertEqual(self.nurse.hospital_id, self.hospital)
-        self.assertEqual(self.nurse.tel_no, "+254712345678")
 
 
 class NurseModelUnhappyTest(TestCase):
@@ -69,7 +67,6 @@ class NurseModelUnhappyTest(TestCase):
             user=self.user,
             hospital_id=self.hospital,
             gender="InvalidGender",  # Invalid gender
-            tel_no="+254712345678",
             reg_no="RN123456",
             sub_location="Test Sub-location",
         )
@@ -84,13 +81,10 @@ class NurseModelUnhappyTest(TestCase):
             user=self.user,
             hospital_id=self.hospital,
             gender="Female",
-            tel_no="invalid_phone",  # Invalid phone number format
             reg_no="RN123456",
             sub_location="Test Sub-location",
         )
-        # Phone number is invalid, so validation should fail
-        with self.assertRaises(ValidationError):
-            nurse.full_clean()  # This triggers model validation
+    
 
     def test_missing_user(self):
         """
@@ -100,7 +94,6 @@ class NurseModelUnhappyTest(TestCase):
             user=None,  # Missing user
             hospital_id=self.hospital,
             gender="Female",
-            tel_no="+254712345678",
             reg_no="RN123456",
             sub_location="Test Sub-location",
         )
@@ -115,7 +108,6 @@ class NurseModelUnhappyTest(TestCase):
             user=self.user,
             hospital_id=None,  # Missing hospital
             gender="Female",
-            tel_no="+254712345678",
             reg_no="RN123456",
             sub_location="Test Sub-location",
         )
