@@ -56,29 +56,6 @@ from .serializers import CareguideSerializer
 from community_health_promoter.utils import send_invitation_email
 
 
-class ScrapeCareguideView(APIView):
-    def post(self, request):
-        url = request.data.get('url')
-        if not url:
-            return Response({"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-
-            article_data = scrape_article(url)
-            if article_data:
-                careguide = Careguide.objects.create(
-                    title=article_data.get('Title', ''),
-                    content=article_data.get('Content', ''),
-                    author=article_data.get('Author', ''),
-                )
-                serializer = CareguideSerializer(careguide)
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"error": "Failed to scrape article"}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
 class NurseListView(APIView):
     """API View for getting a list of nurses"""
     def get(self, request):
@@ -107,7 +84,7 @@ class NurseListView(APIView):
 class NurseDetailView(APIView):
     """This APIView is to show the detailed information about the nurse"""
     def get(self, request, pk):
-        """This is for getting a specific nurse by using their unique id"""
+        """This iRan existing unit tests to verify that no new bugs were introduced.s for getting a specific nurse by using their unique id"""
         nurses = Nurse.objects.get(pk=pk)
         serializer = NurseSerializer(nurses)
         return Response(serializer.data)
@@ -267,6 +244,7 @@ class NextOfKinDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CHPListView(APIView):
     """API View for getting a list of CHPs"""
@@ -494,6 +472,7 @@ class ScreeningTestScoreListView(APIView):
         serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     def post(self, request):
+
         """This is for adding screening test"""
         serializer = ScreeningTestScoreSerializer(data=request.data)
         if serializer.is_valid():
@@ -510,6 +489,23 @@ class ScreeningTestScoreListView(APIView):
             }, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+          
+            test_date = request.data.get('test_date', None)
+            
+            if test_date:
+                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date)
+            else:
+                screening_tests = ScreeningTestScore.objects.all()
+            result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
+
+            
+            serializer.save()
+
+            return Response({
+                "message": "Screening test score updated successfully",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
 
 class ScreeningTestScoreDetailView(APIView):
 
@@ -518,6 +514,8 @@ class ScreeningTestScoreDetailView(APIView):
         screening_test = ScreeningTestScore.objects.get(id=id)
         serializer = ScreeningTestScoreSerializer(screening_test)        
         return Response(serializer.data)
+
+        
     def put(self, request, pk):
         try:
             screening_test = ScreeningTestScore.objects.get(pk=pk)

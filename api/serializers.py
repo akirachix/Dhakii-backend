@@ -19,6 +19,11 @@ class NurseSerializer(serializers.ModelSerializer):
     NurseSerializer: Serializes the Nurse model for API interactions.
     Converts Nurse objects to and from JSON.
     """
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+    phone_number = serializers.CharField(source= 'user.phone_number')
     class Meta:
         model = Nurse
         fields = '__all__'
@@ -31,6 +36,11 @@ class NurseAdminSerializer(serializers.ModelSerializer):
     NurseAdminSerializer: Serializes the NurseAdmin model for API interactions.
     Converts NurseAdmin objects to and from JSON.
     """
+    firstname = serializers.CharField(source='user.first_name')
+    lastname = serializers.CharField(source='user.last_name')
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+    phone_number = serializers.CharField(source= 'user.phone_number')
     class Meta:
         model = NurseAdmin
         fields = '__all__'
@@ -84,17 +94,21 @@ class MinimalNextOfKinSerializer(serializers.ModelSerializer):
         model = NextOfKin
         fields = '__all__'  
 
-
 class CHPSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    username = serializers.CharField(source='user.username')
+    email = serializers.EmailField(source='user.email')
+    phone_number = serializers.CharField(source= 'user.phone_number')
     class Meta:
         model = CHP
         fields = '__all__'
+
 class MinimalCHPSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(read_only=True)
     sub_location = serializers.SerializerMethodField()
     def get_sub_location(self, obj):
         return obj.sub_location
-
     class Meta:
         model = CHP
         fields = '__all__'
@@ -143,6 +157,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+feature/migrations
+
     def create(self, validated_data):
         user = User(
             email=validated_data['email'],
@@ -156,7 +172,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
 
 
 class AnswerSerializer(serializers.ModelSerializer):
