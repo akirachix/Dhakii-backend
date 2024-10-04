@@ -57,7 +57,7 @@ class ScreeningTestScoreModelTest(TestCase):
             str(screening_test),
             f" Total Score: {screening_test.total_score}",
             f"Test {screening_test.id} - Total Score: {screening_test.total_score}",
-
+        )
         
 
 class ScreeningTestScoreModelUnhappyPathTest(TestCase):
