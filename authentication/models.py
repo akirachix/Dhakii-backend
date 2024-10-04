@@ -43,4 +43,3 @@ class CustomUser(AbstractUser):
     class Meta:
         verbose_name = 'Custom User'
         verbose_name_plural = 'Custom Users'
-        # Additional meta options can be added here
