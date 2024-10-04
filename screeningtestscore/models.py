@@ -16,6 +16,7 @@ class ScreeningTestScore(models.Model):
     def __str__(self):
         return f" Total Score: {self.total_score}"
 
+
     def clean(self):
         # Only perform the check if test_date is not None
         if self.test_date and self.test_date > date.today():

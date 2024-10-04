@@ -158,6 +158,20 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
 
+    def create(self, validated_data):
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+            phone_number=validated_data.get('phone_number', ''),
+            user_role=validated_data.get('user_role', '')
+        )
+        # Hash the password
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
 
     def create(self, validated_data):
         user = User(

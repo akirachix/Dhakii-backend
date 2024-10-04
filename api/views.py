@@ -507,7 +507,10 @@ class ScreeningTestScoreListView(APIView):
             }, status=status.HTTP_200_OK)
 
 
+
+
 class ScreeningTestScoreDetailView(APIView):
+
 
     def get(self, request, id):
         """This is for getting a specific nurse admin by using their unique id"""
