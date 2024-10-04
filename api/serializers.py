@@ -19,8 +19,8 @@ class NurseSerializer(serializers.ModelSerializer):
     NurseSerializer: Serializes the Nurse model for API interactions.
     Converts Nurse objects to and from JSON.
     """
-    first_name = serializers.CharField(source='user.first_name')
-    last_name = serializers.CharField(source='user.last_name')
+    firstname = serializers.CharField(source='user.first_name')
+    lastname = serializers.CharField(source='user.last_name')
     username = serializers.CharField(source='user.username')
     email = serializers.EmailField(source='user.email')
     phone_number = serializers.CharField(source= 'user.phone_number')
