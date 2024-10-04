@@ -8,7 +8,8 @@ class NurseAdmin(models.Model):
     """
     NurseAdmin Model - Stores information about nurse administrators.
     """
-    id = models.AutoField(primary_key=True)
+
+
     hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

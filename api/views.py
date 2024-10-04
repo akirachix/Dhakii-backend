@@ -514,6 +514,8 @@ class ScreeningTestScoreDetailView(APIView):
         screening_test = ScreeningTestScore.objects.get(id=id)
         serializer = ScreeningTestScoreSerializer(screening_test)        
         return Response(serializer.data)
+
+        
     def put(self, request, pk):
         try:
             screening_test = ScreeningTestScore.objects.get(pk=pk)
