@@ -10,5 +10,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+<<<<<<< Updated upstream
        
+=======
+      
+>>>>>>> Stashed changes
     ]

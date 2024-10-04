@@ -11,6 +11,13 @@ class ScreeningTestScore(models.Model):
     total_score = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return f" Total Score: {self.total_score}"
+        return f"Test {self.id} - Total Score: {self.total_score}"
 
-   
+
+    def clean(self):
+        # Only perform the check if test_date is not None
+        if self.test_date and self.test_date > date.today():
+            raise ValidationError("Test date cannot be in the future.")
+
+
+
