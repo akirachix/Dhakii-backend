@@ -56,7 +56,6 @@ from .serializers import CareguideSerializer
 from community_health_promoter.utils import send_invitation_email
 
 
-
 class NurseListView(APIView):
     """API View for getting a list of nurses"""
     def get(self, request):
@@ -472,11 +471,10 @@ class ScreeningTestScoreListView(APIView):
             screening_tests = ScreeningTestScore.objects.all()
         serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
     def post(self, request):
-        """Add a new screening test score or retrieve existing ones based on the test date."""
+
+        """This is for adding screening test"""
         serializer = ScreeningTestScoreSerializer(data=request.data)
-        
         if serializer.is_valid():
             test_date = request.data.get('test_date', None)
             if test_date:
@@ -491,6 +489,7 @@ class ScreeningTestScoreListView(APIView):
             }, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+          
             test_date = request.data.get('test_date', None)
             
             if test_date:
@@ -638,8 +637,6 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 class YourProtectedView(APIView):

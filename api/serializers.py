@@ -111,7 +111,7 @@ class MinimalCHPSerializer(serializers.ModelSerializer):
         return obj.sub_location
     class Meta:
         model = CHP
-        fields = ['user_id', 'reg_no','sub_location']
+        fields = '__all__'
 
 
 class InviteCHPSerializer(serializers.Serializer):
@@ -157,6 +157,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+feature/migrations
 
     def create(self, validated_data):
         user = User(
@@ -171,8 +172,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
-
 
 
 class AnswerSerializer(serializers.ModelSerializer):
