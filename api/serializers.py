@@ -157,7 +157,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-feature/migrations
+
 
     def create(self, validated_data):
         user = User(
