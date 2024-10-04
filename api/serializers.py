@@ -36,8 +36,6 @@ class NurseAdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-
-
 class MotherSerializer(serializers.ModelSerializer):
     """This serializer for the Mother model, including all fields."""
 
@@ -59,8 +57,6 @@ class MinimalMotherSerializer(serializers.ModelSerializer):
         This function the full names of the mother.
         """
         return f"{object.first_name} {object.last_name}"
-
-
 
 
 class NextOfKinSerializer(serializers.ModelSerializer):
@@ -111,9 +107,6 @@ class InviteCHPSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         return value
-
-
-    
     
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -143,14 +136,13 @@ class ScreeningTestScoreSerializer(serializers.ModelSerializer):
         model = ScreeningTestScore
         fields = '__all__'
         
-        
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
     
     class Meta:
         model = User
         fields = '__all__'
-
     def create(self, validated_data):
         user = User(
             email=validated_data['email'],
@@ -164,7 +156,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
 
 
 
