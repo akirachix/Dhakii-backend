@@ -2,6 +2,7 @@ from django.db import models
 from questions.models import EPDSQuestion
 from screeningtestscore.models import ScreeningTestScore
 from django.core.exceptions import ValidationError  # Import ValidationError
+
 class Answer(models.Model):
     question = models.ForeignKey(EPDSQuestion, on_delete=models.CASCADE)
     test = models.ForeignKey(ScreeningTestScore, on_delete=models.CASCADE)
