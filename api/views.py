@@ -469,42 +469,25 @@ class ScreeningTestScoreListView(APIView):
                 return Response({"error": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             screening_tests = ScreeningTestScore.objects.all()
+        
         serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    def post(self, request):
 
-        """This is for adding screening test"""
+    def post(self, request):
+        """This is for adding a screening test"""
         serializer = ScreeningTestScoreSerializer(data=request.data)
         if serializer.is_valid():
-            test_date = request.data.get('test_date', None)
-            if test_date:
-                test_date_obj = serializer.validated_data.get('test_date')
-                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date_obj)
-            else:
-                screening_tests = ScreeningTestScore.objects.all()
-            result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
-            return Response({
-                "message": "Screening test score updated successfully",
-                "data": serializer.data
-            }, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-          
-            test_date = request.data.get('test_date', None)
-            
-            if test_date:
-                screening_tests = ScreeningTestScore.objects.filter(test_date=test_date)
-            else:
-                screening_tests = ScreeningTestScore.objects.all()
-            result_serializer = ScreeningTestScoreSerializer(screening_tests, many=True)
-
-            
+            # Save the new screening test score
             serializer.save()
 
+            # Return the saved data with a success message
             return Response({
-                "message": "Screening test score updated successfully",
+                "message": "Screening test score added successfully",
                 "data": serializer.data
-            }, status=status.HTTP_200_OK)
+            }, status=status.HTTP_201_CREATED)
+        else:
+            # Return validation errors
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
