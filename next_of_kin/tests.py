@@ -192,3 +192,7 @@ def test_missing_relationship(self):
         )
         with self.assertRaises(ValidationError):
             next_of_kin.full_clean()
+
+
+
+

@@ -10,13 +10,13 @@ class NurseAdmin(models.Model):
     NurseAdmin Model - Stores information about nurse administrators.
     """
 
-    hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     location = models.CharField(max_length=255)
     sub_location = models.CharField(max_length=255)
+    village = models.CharField(max_length=255, default='Village')
 
     def __str__(self):
         return f"Nurse Admin {self.user.username} ({self.hospital_id.name})"

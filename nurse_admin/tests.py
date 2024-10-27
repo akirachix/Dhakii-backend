@@ -23,15 +23,16 @@ class NurseAdminModelTest(TestCase):
         # Create a valid NurseAdmin instance
         self.nurse_admin = NurseAdmin.objects.create(
             user=self.user,
-            hospital_id=self.hospital,
+            hospital=self.hospital,  # Correct field usage
             location="Test Location",
-            sub_location="Test Sub-location",
+            sub_location="Test Sub-location"
         )
+
 
     def test_nurse_admin_creation(self):
         # Test if the NurseAdmin instance was created successfully (happy path)
         self.assertEqual(self.nurse_admin.user, self.user)
-        self.assertEqual(self.nurse_admin.hospital_id, self.hospital)
+        self.assertEqual(self.nurse_admin.hospital, self.hospital)
         
 
     def test_missing_required_fields(self):

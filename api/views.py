@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from nurse.models import Nurse
 from django.db import IntegrityError
 from nurse_admin.models import NurseAdmin
-from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer,InviteCHPSerializer
+from .serializers import NurseSerializer, NurseAdminSerializer, MotherSerializer, NextOfKinSerializer, CHPSerializer, HospitalSerializer, EPDSQuestionSerializer,ScreeningTestScoreSerializer,AnswerSerializer, EPDSQuestionSerializer,  UserSerializer,AnswerSerializer,InviteCHPSerializer, LocationSerializer
 import logging
 from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model 
@@ -54,6 +54,9 @@ from django.http import Http404
 from careguide.models import Careguide
 from .serializers import CareguideSerializer
 from community_health_promoter.utils import send_invitation_email
+from rest_framework.views import APIView
+from locations.models import Location
+from django.utils import timezone
 
 
 class NurseListView(APIView):
@@ -827,5 +830,82 @@ class CareguideDetailView(APIView):
         careguide.save()
         return Response({"message": "Article deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
-    
+
+
+#locations
+   
+logger = logging.getLogger(__name__)
+
+class LocationListView(APIView):
+    """Add a new location."""
+    def post(self, request):
+        logger.info("Received data for adding a new location: %s", request.data)
+        serializer = LocationSerializer(data=request.data)
+        if serializer.is_valid():
+            logger.info("Data is valid, saving new location.")
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            logger.error("Validation errors: %s", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    """
+    View to list all locations, search by location name, or add a new location.
+    """
+
+    def get(self, request):
+        """Get a list of all locations or filter by location name."""
+        locations = self.get_queryset()
+        serializer = LocationSerializer(locations, many=True)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        """Get all locations or filter by location name."""
+        queryset = Location.objects.all()
+        location_name = self.request.query_params.get('location', None)
+        if location_name:
+            queryset = queryset.filter(location__icontains=location_name)
+        return queryset
+
+
+class LocationDetailView(APIView):
+    """
+    View to retrieve, update, or delete a specific location by ID.
+    """
+
+    def get(self, request, pk):
+        """Get a specific location by ID."""
+        try:
+            location = Location.objects.get(pk=pk)
+            serializer = LocationSerializer(location)
+            return Response(serializer.data)
+        except Location.DoesNotExist:
+            return Response({"error": "Location not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        """Update a specific location by ID."""
+        try:
+            location = Location.objects.get(pk=pk)
+        except Location.DoesNotExist:
+            return Response({"error": "Location not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LocationSerializer(location, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """
+        Soft delete a location by setting a 'deleted' timestamp.
+        """
+        try:
+            location = Location.objects.get(pk=pk)
+            location.deleted_at = timezone.now()
+            location.save()
+            return Response({"message": "Location soft-deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Location.DoesNotExist:
+            return Response({"error": "Location not found"}, status=status.HTTP_404_NOT_FOUND)
+
         

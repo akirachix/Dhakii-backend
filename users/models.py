@@ -4,18 +4,15 @@ from django.contrib.auth.models import (
     BaseUserManager,
     PermissionsMixin,
 )
-from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from datetime import datetime
+from hospital.models import Hospital 
 
-
-# Define your validator outside the User class
 phone_number_validator = RegexValidator(
     regex=r"^\+?\d{10,15}$",
     message="Phone number must be between 10 and 15 digits and start with '+' if international.",
 )
-
-
 class MyUserManager(BaseUserManager):
     def create_user(self, email, username, password=None, **extra_fields):
         if not email:
@@ -27,12 +24,10 @@ class MyUserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-
     def create_superuser(self, email, username, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(email, username, password, **extra_fields)
-
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
@@ -41,21 +36,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=150, blank=True, null=True)
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, validators=[phone_number_validator])
-
     USER_ROLES = [
-        ("admin", "NurseAdmin"),
+        ("nurse_admin", "NurseAdmin"),
         ("nurse", "Nurse"),
         ("chp", "Community Health Promoter"),
     ]
-
     user_role = models.CharField(
         max_length=50, choices=USER_ROLES, blank=True, null=True
     )
-
-    def clean(self):
-        # Ensure user_role is not empty or invalid
-        if not self.user_role or self.user_role not in dict(self.USER_ROLES):
-            raise ValidationError("User role is required and must be valid.")
+    hospital = models.ForeignKey(
+        Hospital, on_delete=models.CASCADE, blank=True, null=True
+    )  
 
     created_at = models.DateTimeField(default=datetime.now)
     updated_at = models.DateTimeField(default=datetime.now)
@@ -64,13 +55,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
-
     objects = MyUserManager()
 
     def __str__(self):
         return self.username
-
-
+    def clean(self):
+      
+        if self.user_role and self.user_role not in dict(self.USER_ROLES):
+            raise ValidationError("Invalid user role.")
 
 
 

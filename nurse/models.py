@@ -16,12 +16,13 @@ class Nurse(models.Model):
 
     nurse_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    hospital_id = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
     gender = models.CharField(max_length=6, choices=GENDER_CHOICES)
     reg_no = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)  # Ensure this is included
+    created_at = models.DateTimeField(auto_now_add=True)  
     updated_at = models.DateTimeField(auto_now=True)
     sub_location = models.CharField(max_length=255)
+    village = models.CharField(max_length=255, default='Village')
 
     def __str__(self):
         return f"Nurse {self.user.username} ({self.reg_no})"
