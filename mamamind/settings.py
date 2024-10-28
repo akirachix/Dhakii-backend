@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'hospital',
     'community_health_promoter',
     'careguide',
+    'locations',
     'django_crontab',
     'answers',
     'tinymce',

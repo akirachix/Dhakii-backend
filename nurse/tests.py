@@ -21,7 +21,7 @@ class NurseModelTest(TestCase):
         # Create a nurse instance
         self.nurse = Nurse.objects.create(
             user=self.user,
-            hospital_id=self.hospital,
+            hospital=self.hospital,
             gender="Female",
             reg_no="RN123456",
             sub_location="Test Sub-location",
@@ -30,7 +30,7 @@ class NurseModelTest(TestCase):
     def test_nurse_creation(self):
         # Test if the Nurse instance was created successfully
         self.assertEqual(self.nurse.user, self.user)
-        self.assertEqual(self.nurse.hospital_id, self.hospital)
+        self.assertEqual(self.nurse.hospital, self.hospital)
 
 
 class NurseModelUnhappyTest(TestCase):

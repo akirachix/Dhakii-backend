@@ -20,15 +20,14 @@ class HospitalModelTest(TestCase):
             sub_location="Test Sub-location",
         )
 
-        # Set up a valid CHP instance, providing a user
         self.chp = CHP.objects.create(
-            user=self.user,  # Pass the created user here
-            registered_date="2023-01-01",
-            reg_no="CHP001",
-            location="Test Location",
-            sub_location="Test Sub-location",
-            village="Test Village",
-        )
+        user=self.user,
+        reg_no="CHP001",
+        location="Test Location",
+        sub_location="Test Sub-location",
+        village="Test Village",
+)
+
 
     def test_hospital_creation(self):
         # Test if the Hospital instance was created successfully

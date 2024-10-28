@@ -14,7 +14,6 @@ class CHPModelTest(TestCase):
         # Set up an example CHP instance, providing the user object
         self.chp = CHP.objects.create(
             user=self.user,  # Pass the entire user object here, NOT the ID
-            registered_date=timezone.now().date(),
             reg_no="CHP123",
             location="Test Location",
             sub_location="Test Sub-location",
@@ -47,7 +46,6 @@ class CHPModelUnhappyPathTest(TestCase):
         # Test missing 'reg_no' which is required
         chp = CHP(
             user=self.user,
-            registered_date=timezone.now().date(),
             location="Test Location",
             sub_location="Test Sub-location",
             village="Test Village",
@@ -61,7 +59,6 @@ class CHPModelUnhappyPathTest(TestCase):
         """
         chp = CHP(
             user=self.user,
-            registered_date=timezone.now().date(),
             reg_no="C" * 256,  # Exceeds the max_length of 255
             location="Test Location",
             sub_location="Test Sub-location",
@@ -76,7 +73,6 @@ class CHPModelUnhappyPathTest(TestCase):
         """
         chp = CHP(
             user=None,  # User is missing
-            registered_date=timezone.now().date(),
             reg_no="CHP123",
             location="Test Location",
             sub_location="Test Sub-location",

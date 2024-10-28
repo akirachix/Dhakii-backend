@@ -12,6 +12,7 @@ from careguide.models import Careguide
 from answers.models import Answer
 from rest_framework import serializers
 from careguide.models import Careguide
+from locations.models import Location
 
 #nurse
 class NurseSerializer(serializers.ModelSerializer):
@@ -207,6 +208,13 @@ class CareguideSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+#locations
+class LocationSerializer(serializers.ModelSerializer):
+    """
+    LocationSerializer: Serializes the Location model for API interactions.
+    Converts Location objects to and from JSON.
+    """
 
-
-        
+    class Meta:
+        model = Location
+        fields = '__all__'

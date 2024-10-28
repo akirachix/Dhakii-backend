@@ -2,10 +2,12 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from hospital.models import Hospital
+from community_health_promoter.models import CHP
 
 
 class Mother(models.Model):
-    # Defining constants for better readability
+    
     DUE_VISIT = 1
     VISITED = 0
     MISSED_VISIT = -1
@@ -15,6 +17,8 @@ class Mother(models.Model):
         (MISSED_VISIT, 'Missed Visit'),
     ]
     id = models.AutoField(primary_key=True)
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, null=True, blank=True)
+    chp = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'user_role': 'chp'}, related_name='assigned_mothers' ) 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
@@ -24,10 +28,9 @@ class Mother(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     tel_no = models.CharField(max_length=15)
     marital_status = models.CharField(max_length=20)
-    sub_location = models.CharField(max_length=100)
-    
-    village = models.CharField(max_length=100)
-    # Adding the numeric status field
+    sub_location = models.CharField(max_length=255)
+    village = models.CharField(max_length=255)
+
     status = models.IntegerField(
         choices=STATUS_CHOICES,
         default=DUE_VISIT,
@@ -38,7 +41,6 @@ class Mother(models.Model):
         return f"{self.first_name} {self.last_name}"
 
     def clean(self):
-        # Ensure status is one of the allowed values (1, 0, -1)
         if self.status not in [self.DUE_VISIT, self.VISITED, self.MISSED_VISIT]:
             raise ValidationError("Invalid status value.")
 

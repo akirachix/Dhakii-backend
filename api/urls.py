@@ -13,6 +13,7 @@ from .views import UserProfileView
 from .views import NurseListView, NurseDetailView, NurseAdminListView, NurseAdminDetailView
 from api.views import InviteCHPDetailView
 from .views import CareguideListView, CareguideDetailView
+from api.views import LocationListView, LocationDetailView
 
 urlpatterns = [
     path('nurses/', NurseListView.as_view(), name='nurse_list_view'),
@@ -59,6 +60,8 @@ urlpatterns = [
     path('careguides/', CareguideListView.as_view(), name='careguide-list'),
     path('careguides/<int:id>/', CareguideDetailView.as_view(), name='careguide-detail'),
 
-    
+    path('locations/', LocationListView.as_view(), name='location_list_view'),
+    path('locations/search/', LocationListView.as_view(), name='location_search'),
+    path('locations/<int:pk>/', LocationDetailView.as_view(), name='location_detail'),   
 
 ]
