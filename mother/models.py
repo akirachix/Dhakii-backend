@@ -4,6 +4,8 @@ from django.conf import settings
 from django.utils import timezone
 from hospital.models import Hospital
 from community_health_promoter.models import CHP
+from next_of_kin.models import NextOfKin
+
 
 
 class Mother(models.Model):
@@ -18,11 +20,11 @@ class Mother(models.Model):
     ]
     id = models.AutoField(primary_key=True)
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, null=True, blank=True)
-    chp = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, limit_choices_to={'user_role': 'chp'}, related_name='assigned_mothers' ) 
+    chp = models.ForeignKey(CHP, on_delete=models.CASCADE, null=True, blank=True)
+    kin = models.ForeignKey(NextOfKin, on_delete=models.CASCADE, null=True, blank=True) 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
-    date_of_reg = models.DateField(default=timezone.now)   
     no_of_children = models.PositiveIntegerField()
     registered_date = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

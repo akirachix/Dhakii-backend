@@ -8,7 +8,6 @@ class NextOfKin(models.Model):
     id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-    mother_id = models.ForeignKey('mother.Mother', on_delete=models.CASCADE, related_name='next_of_kin')
     relationship = models.CharField(max_length=50)
     phone_number = models.CharField(max_length=15)
     updated_at = models.DateTimeField(auto_now=True)
