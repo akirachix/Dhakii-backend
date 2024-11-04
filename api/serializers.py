@@ -47,12 +47,15 @@ class NurseAdminSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
 class MotherSerializer(serializers.ModelSerializer):
     """This serializer for the Mother model, including all fields."""
 
     nextOfKin_firstName = serializers.CharField(source='kin.first_name')
     nextOfKin_lastName = serializers.CharField(source='kin.last_name')
+    nextOfKin_relationship = serializers.CharField(source='kin.relationship')
     nextOfKin_phone = serializers.CharField(source='kin.phone_number')
+
     class Meta:
         """This Meta class is to define mother model and fields for the serializer."""
         model = Mother
